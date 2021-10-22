@@ -51,7 +51,7 @@ def integrate(case):
 	###########################################
 	## ATTENTION: works only if f has S3=0
 	kappa_ref = 5 * xp.mean(moments[4, :]) / (9 * xp.mean(moments[2, :]**(5/3)))
-	if case.ComputeFluid and (xp.abs(kappa_ref - case.kappa) / kappa_ref >= 1.5):
+	if case.ComputeFluid and (xp.abs(kappa_ref - case.kappa) >= 1.5):
 		print('\033[33m        Warning: the value of kappa may not be optimal  (kappa_ref = {:.2f}) \033[00m'.format(kappa_ref))
 	fs[2*case.Nx:3*case.Nx] = fs[2*case.Nx:3*case.Nx]**(1/3)
 	fs[3*case.Nx:4*case.Nx] = 0
@@ -66,7 +66,7 @@ def integrate(case):
 		fig_f.canvas.manager.set_window_title('Fluid simulation')
 		axs_f = fig_f.subplots(case.n_moments, 1, sharex=True)
 		line_Ef, = axs_f[-1].plot(case.x, Ef, 'r', label=r'$E$')
-		line_rho, = axs_f[0].plot(case.x, moments[0, :], 'k', label=r'$\rho$')
+		line_rho_f, = axs_f[0].plot(case.x, moments[0, :], 'k', label=r'$\rho$')
 		line_Sf = []
 		for m in range(2, min(case.n_moments, 6)):
 			line_temp, = axs_f[m-1].plot(case.x, moments[m, :], linewidth=2, label=r'$S_{{{}}}$'.format(m))
@@ -80,9 +80,9 @@ def integrate(case):
 		plt.pause(1e-4)
 	if case.PlotKinetic:
 		fig = plt.figure(figsize=(7, 5))
-		fig.canvas.manager.set_window_title('Distribution function')
-		im = plt.imshow(f.transpose(), interpolation='gaussian', origin='lower', aspect='auto', extent=(-case.Lx, case.Lx, -case.Lp, case.Lp), vmin=xp.min(f), vmax=xp.max(f))
-		plt.gca().set_ylabel('$p$')
+		fig.canvas.manager.set_window_title(r'Distribution function $f(x,v,t)$')
+		im = plt.imshow(f.transpose(), interpolation='gaussian', origin='lower', aspect='auto', extent=(-case.Lx, case.Lx, -case.Lv, case.Lv), vmin=xp.min(f), vmax=xp.max(f))
+		plt.gca().set_ylabel('$v$')
 		plt.gca().set_xlabel('$x$')
 		plt.colorbar()
 		fig_k = plt.figure(figsize=(8, 13))
@@ -90,7 +90,7 @@ def integrate(case):
 		axs_k = fig_k.subplots(case.n_moments, 1, sharex=True)
 		moments = case.compute_moments(f, case.n_moments)
 		line_Ek, = axs_k[-1].plot(case.x, Ek, 'r', linewidth=2, label=r'$E$')
-		line_rho, = axs_k[0].plot(case.x, moments[0, :], 'k', linewidth=2, label=r'$\rho$')
+		line_rho_k, = axs_k[0].plot(case.x, moments[0, :], 'k', linewidth=2, label=r'$\rho$')
 		line_Sk = []
 		for m in range(2, case.n_moments):
 			line_temp, = axs_k[m-1].plot(case.x, moments[m, :], linewidth=2, label=r'$S_{{{}}}$'.format(m))
@@ -116,7 +116,7 @@ def integrate(case):
 				break
 			if case.PlotFluid:
 				rho, u, G2, G3 = xp.split(fs, 4)
-				line_rho.set_ydata(rho)
+				line_rho_f.set_ydata(rho)
 				line_Ef.set_ydata(case.E_fluid(rho))
 				S = case.compute_S(G2, G3)[:min(case.n_moments-2, 4)]
 				for m in range(min(case.n_moments-2, 4)):
@@ -136,14 +136,14 @@ def integrate(case):
 						f, Ek = case.L2(f, Ek, coeff * case.TimeStep)
 				f[f<=1e-14] = 0
 				f_ = xp.pad(f, ((0, 1),), mode='wrap')
-				f_ /= xp.trapz(xp.trapz(f_, case.p_, axis=1), case.x_)
+				f_ /= xp.trapz(xp.trapz(f_, case.v_, axis=1), case.x_)
 				f = f_[:-1, :-1]
 			if case.PlotKinetic:
 				moments = case.compute_moments(f, case.n_moments)
 				Hk = case.kinetic_energy(f, Ek)
 				im.set_data(f.transpose())
 				line_Ek.set_ydata(Ek)
-				line_rho.set_ydata(moments[0, :])
+				line_rho_k.set_ydata(moments[0, :])
 				for m in range(2, case.n_moments):
 					line_Sk[m - 2].set_ydata(moments[m, :])
 				for ax in axs_k:

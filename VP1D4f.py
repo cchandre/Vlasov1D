@@ -45,17 +45,17 @@ class VP1D4f:
 			setattr(self, key, dict[key])
 		self.DictParams = dict
 		self.x = xp.linspace(-self.Lx, self.Lx, self.Nx, endpoint=False, dtype=xp.float64)
-		self.p = xp.linspace(-self.Lp, self.Lp, self.Np, endpoint=False, dtype=xp.float64)
+		self.v = xp.linspace(-self.Lv, self.Lv, self.Nv, endpoint=False, dtype=xp.float64)
 		self.x_ = xp.linspace(-self.Lx, self.Lx, self.Nx+1, dtype=xp.float64)
-		self.p_ = xp.linspace(-self.Lp, self.Lp, self.Np+1, dtype=xp.float64)
+		self.v_ = xp.linspace(-self.Lv, self.Lv, self.Nv+1, dtype=xp.float64)
 		self.kx = xp.pi / self.Lx * fftfreq(self.Nx, d=1/self.Nx)
 		div = xp.divide(1, 1j * self.kx, where=self.kx!=0)
 		div[0] = 0
-		self.kp = xp.pi / self.Lp * fftfreq(self.Np, d=1/self.Np)
-		f_ = self.f_init(self.x_, self.p_)
-		self.f = f_[:-1, :-1] / xp.trapz(xp.trapz(f_, self.p_, axis=1), self.x_)
+		self.kv = xp.pi / self.Lv * fftfreq(self.Nv, d=1/self.Nv)
+		f_ = self.f_init(self.x_, self.v_)
+		self.f = f_[:-1, :-1] / xp.trapz(xp.trapz(f_, self.v_, axis=1), self.x_)
 		self.E_fluid = lambda rho: 4 * xp.pi * self.qe * ifft(div * fft(rho)).real
-		self.E_kinetic = lambda f: self.E_fluid(xp.trapz(xp.pad(f, ((0, 1),), mode='wrap'), self.p_, axis=1)[:-1])
+		self.E_kinetic = lambda f: self.E_fluid(xp.trapz(xp.pad(f, ((0, 1),), mode='wrap'), self.v_, axis=1)[:-1])
 		if self.integrator_kinetic == 'position-Verlet':
 			self.integr_coeff = [0.5, 1, 0.5]
 			self.integr_type = [1, 2, 1]
@@ -74,12 +74,12 @@ class VP1D4f:
 			self.integr_type = [1, 2, 1, 2, 1, 2, 1, 2, 1]
 
 	def L1(self, f, E, dt):
-		ft = ifft(xp.exp(-1j * self.kx[:, None] * self.p[None, :] * dt) * fft(f, axis=0), axis=0).real
+		ft = ifft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * fft(f, axis=0), axis=0).real
 		Et = self.E_kinetic(ft)
 		return ft, Et
 
 	def L2(self, f, E, dt):
-		ft = ifft(xp.exp(-1j * self.qe * E[:, None] * self.kp[None, :] * dt) * fft(f, axis=1), axis=1).real
+		ft = ifft(xp.exp(-1j * self.qe * E[:, None] * self.kv[None, :] * dt) * fft(f, axis=1), axis=1).real
 		return ft, E
 
 	def eqn_4f(self, t, fs):
@@ -102,18 +102,18 @@ class VP1D4f:
 
 	def compute_moments(self, f, n):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
-		rho = xp.trapz(f_, self.p_, axis=1)
-		u = xp.trapz(self.p_[None, :] * f_, self.p_, axis=1) / rho
+		rho = xp.trapz(f_, self.v_, axis=1)
+		u = xp.trapz(self.v_[None, :] * f_, self.v_, axis=1) / rho
 		table_moments = xp.vstack((rho[:-1], u[:-1]))
 		for m in range(2, n+1):
-			Sm = xp.trapz((self.p_[None, :] - u[:, None])**m * f_, self.p_, axis=1) / rho**(m+1)
+			Sm = xp.trapz((self.v_[None, :] - u[:, None])**m * f_, self.v_, axis=1) / rho**(m+1)
 			table_moments = xp.vstack((table_moments, Sm[:-1]))
 		return table_moments
 
 	def kinetic_energy(self,f, E):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
 		E_ = xp.pad(E, (0, 1), mode='wrap')
-		return (xp.trapz(xp.trapz(self.p_[None, :]**2 * f_, self.p_, axis=1), self.x_) + xp.trapz(E_**2, self.x_) / (4 * xp.pi)) / 2
+		return (xp.trapz(xp.trapz(self.v_[None, :]**2 * f_, self.v_, axis=1), self.x_) + xp.trapz(E_**2, self.x_) / (4 * xp.pi)) / 2
 
 	def fluid_energy(self, fs):
 		rho, u, G2, G3 = xp.split(fs, 4)

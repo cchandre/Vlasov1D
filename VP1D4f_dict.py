@@ -6,8 +6,8 @@ import numpy as xp
 
 qe = -1
 
-Tf = 45
-TimeStep = 1e-3
+Tf = 5
+TimeStep = 1e-2
 integrator_kinetic = 'position-Verlet'
 integrator_fluid = 'RK45'
 
@@ -15,21 +15,21 @@ n_moments = 4
 frames = 100
 
 Lx = 2 * xp.pi
-Lp = 6
+Lv = 6
 Nx = 2**10
-Np = 2**10
+Nv = 2**10
 
 epsilon = 1e-1
-f_init = lambda x, p: p[None, :]**2 * (1 - epsilon * xp.cos(x[:, None] / 2)) * xp.exp(-p[None, :]**2 / 2)
+f_init = lambda x, v: v[None, :]**2 * (1 - epsilon * xp.cos(x[:, None] / 2)) * xp.exp(-v[None, :]**2 / 2)
 ## ATTENTION: for the fluid approach to work, f_init should be with S3=0
-kappa = 3
+kappa = 7
 
 ComputeKinetic = True
-ComputeFluid = False
+ComputeFluid = True
 SaveKinetic = False
 SaveFluid = False
 PlotKinetic = True
-PlotFluid = False
+PlotFluid = True
 
 ########################################################################################################################
 ##                                                DO NOT EDIT BELOW                                                   ##
@@ -44,9 +44,9 @@ dict.update({
 		'n_moments': n_moments,
         'frames': frames,
         'Lx': Lx,
-		'Lp': Lp,
+		'Lv': Lv,
 		'Nx': Nx,
-		'Np': Np,
+		'Nv': Nv,
 		'f_init': f_init,
 		'ComputeKinetic': ComputeKinetic,
 		'ComputeFluid': ComputeFluid,
