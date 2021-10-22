@@ -1,6 +1,6 @@
-# Vlasov1D : one-dimensional Vlasov-Poisson equation and its Hamiltonian fluid reductions
+# One-dimensional Vlasov-Poisson equation and its Hamiltonian fluid reductions
 
-- [`Vlasov1D_4field.mlx`](https://github.com/cchandre/Vlasov1D/blob/main/Vlasov1D_4field.mlx): Matlab live script to compute and represent the series expansion of the explicit closure S<sub>4</sub>=S<sub>4</sub>(S<sub>2</sub>,S<sub>3</sub>) and S<sub>5</sub>=S<sub>5</sub>(S<sub>2</sub>,S<sub>3</sub>); also compute the series expansions of the Casimir invariants 
+- [`Vlasov1D_4field.mlx`](https://github.com/cchandre/Vlasov1D/blob/main/Vlasov1D_4field.mlx): Matlab live script to compute and represent the series expansion of the explicit closure S<sub>4</sub>=S<sub>4</sub>(S<sub>2</sub>,S<sub>3</sub>) and S<sub>5</sub>=S<sub>5</sub>(S<sub>2</sub>,S<sub>3</sub>); also compute the series expansions of the three Casimir invariants C<sub>1</sub>, C<sub>2</sub> and C<sub>3</sub>
 - [`ParametricClosure4.nb`](https://github.com/cchandre/Vlasov1D/blob/main/ParametricClosure4.nb): Mathematica notebook to check and represent the parametric closure S<sub>2</sub>=S<sub>2</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>), S<sub>3</sub>=S<sub>3</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>),  S<sub>4</sub>=S<sub>4</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>) and S<sub>5</sub>=S<sub>5</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>)
 
 - [`VP1D4f_dict.py`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_dict.py): to be edited to change the parameters of the VP1D4f computation (see below for a dictionary of parameters)
@@ -26,11 +26,11 @@ ___
 - *n_moments*: integer; number of moments to be represented
 - *frames*: integer; number of frames to be represented in time
 
-- *Lx*: double; the x-axis is (-*Lx*,*Lx*)
-- *Lp*: double; the p-axis is (-*Lp*,*Lp*)
-- *Nx*: integer; number of points in x to represent the field variables
-- *Np*: integer; number of points in p to represent the field variables
-- *f_init*: lambda function; initial distribution
+- *Lx*: double; the *x*-axis is (-*Lx*, *Lx*)
+- *Lp*: double; the *p*-axis is (-*Lp*, *Lp*)
+- *Nx*: integer; number of points in *x* to represent the field variables
+- *Np*: integer; number of points in *p* to represent the field variables
+- *f_init*: lambda function; initial distribution *f*(*x*,*p*,t=0)
 
 - *ComputeKinetic*: boolean; if True, integrate the Vlasov-Poisson equation 
 - *ComputeFluid*: boolean; if True, integrate the fluid equations
