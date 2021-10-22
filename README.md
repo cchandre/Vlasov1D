@@ -1,4 +1,4 @@
-# Vlasov1D : one-dimensional Vlasov-Poisson equation and its Hamiltonian fluid reductions
+# One-dimensional Vlasov-Poisson equation and its Hamiltonian fluid reductions
 
 - [`Vlasov1D_4field.mlx`](https://github.com/cchandre/Vlasov1D/blob/main/Vlasov1D_4field.mlx): Matlab live script to compute and represent the series expansion of the explicit closure S<sub>4</sub>=S<sub>4</sub>(S<sub>2</sub>,S<sub>3</sub>) and S<sub>5</sub>=S<sub>5</sub>(S<sub>2</sub>,S<sub>3</sub>); also compute the series expansions of the Casimir invariants 
 - [`ParametricClosure4.nb`](https://github.com/cchandre/Vlasov1D/blob/main/ParametricClosure4.nb): Mathematica notebook to check and represent the parametric closure S<sub>2</sub>=S<sub>2</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>), S<sub>3</sub>=S<sub>3</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>),  S<sub>4</sub>=S<sub>4</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>) and S<sub>5</sub>=S<sub>5</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>)
@@ -26,8 +26,8 @@ ___
 - *n_moments*: integer; number of moments to be represented
 - *frames*: integer; number of frames to be represented in time
 
-- *Lx*: double; the x-axis is (-*Lx*,*Lx*)
-- *Lp*: double; the p-axis is (-*Lp*,*Lp*)
+- *Lx*: double; the x-axis is (-*Lx*, *Lx*)
+- *Lp*: double; the p-axis is (-*Lp*, *Lp*)
 - *Nx*: integer; number of points in x to represent the field variables
 - *Np*: integer; number of points in p to represent the field variables
 - *f_init*: lambda function; initial distribution
