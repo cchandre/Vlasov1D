@@ -26,8 +26,8 @@ ___
 - *n_moments*: integer; number of moments to be represented
 - *frames*: integer; number of frames to be represented in time
 
-- *Lx*: double; the x-axis is (-*Lx*, *Lx*)
-- *Lp*: double; the p-axis is (-*Lp*, *Lp*)
+- *Lx*: double; the *x*-axis is (-*Lx*, *Lx*)
+- *Lp*: double; the *p*-axis is (-*Lp*, *Lp*)
 - *Nx*: integer; number of points in x to represent the field variables
 - *Np*: integer; number of points in p to represent the field variables
 - *f_init*: lambda function; initial distribution
