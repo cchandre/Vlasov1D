@@ -43,3 +43,7 @@ ___
 Reference: C. Chandre, B.A. Shadwick, *Four-field Hamiltonian closure of the one-dimensional Vlasov-Poisson equation*, preprint (2021)
 
 For more information: <cristel.chandre@univ-amu.fr>
+
+<p align="center">
+  <img src="https://github.com/cchandre/Vlasov1D/blob/main/fig_VP1D4f.png" alt="Example" width="400"/>
+</p>
