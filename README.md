@@ -32,7 +32,7 @@ ___
 - *Lp*: double; the *p*-axis is (-*Lp*, *Lp*)
 - *Nx*: integer; number of points in *x* to represent the field variables
 - *Np*: integer; number of points in *p* to represent the field variables
-- *tail_indx*: array of integers; indices of the high wavevectors *k<sub>x</sub>* to be filtered out
+- *tail_indx*: array of integers; indices of the high wavevectors (*k<sub>x</sub>*, *k<sub>v</sub>*) to be filtered out
 - *f_init*: lambda function; initial distribution *f*(*x*,*p*,t=0)
 
 - *ComputeKinetic*: boolean; if True, integrate the Vlasov-Poisson equation 
