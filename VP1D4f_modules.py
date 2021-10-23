@@ -35,14 +35,10 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 
-plt.rcParams.update({
-	'text.usetex': True,
-	'font.family': 'serif',
-	'font.sans-serif': ['Palatino'],
-	'font.size': 20,
-	'axes.labelsize': 26,
-	'figure.figsize': [8, 8],
-	'image.cmap': 'Blues'})
+colors = ['k', 'w']
+# colors =
+
+
 
 def integrate(case):
 	f = case.f.copy()
@@ -59,20 +55,35 @@ def integrate(case):
 	if case.ComputeFluid and (case.kappa <= xp.min(fs[2*case.Nx:3*case.Nx])):
 		print('\033[33m        Warning: the value of kappa may be too small  (kappa < S2^(1/3)) \033[00m')
 	###########################################
-	Ef = case.E_fluid(fs[:case.Nx])
-	Ek = case.E_kinetic(f)
+	Ef = case.E(fs[:case.Nx])
+	Ek = Ef.copy()
 	H0k = case.kinetic_energy(f, Ek)
 	H0f = case.fluid_energy(fs)
 	plt.ion()
+	if case.darkmode:
+		cs = ['k', 'w']
+	else:
+		cs = ['w', 'k']
+	plt.rc('figure', facecolor=cs[0], titlesize=30)
+	plt.rc('text', usetex=True, color=cs[1])
+	plt.rc('font', family='sans-serif', size=20)
+	plt.rc('axes', facecolor=cs[0], edgecolor=cs[1], labelsize=26, labelcolor=cs[1], titlecolor=cs[1])
+	plt.rc('xtick', color=cs[1], labelcolor=cs[1])
+	plt.rc('ytick', color=cs[1], labelcolor=cs[1])
+	plt.rc('lines', linewidth=3)
+	plt.rc('image', cmap='Blues')
 	if case.PlotFluid:
-		fig_f = plt.figure(figsize=(8, 13))
+		fig_f = plt.figure(figsize=(8, 10))
 		fig_f.canvas.manager.set_window_title('Fluid simulation')
-		axs_f = fig_f.subplots(case.n_moments, 1, sharex=True)
-		line_Ef, = axs_f[-1].plot(case.x, Ef, 'r', label=r'$E$')
-		line_rho_f, = axs_f[0].plot(case.x, moments[0, :], 'k', label=r'$\rho$')
+		axs_f = fig_f.add_gridspec(case.n_moments, hspace=0.05).subplots(sharex=True)
+		axs_f[-1].plot(case.x, Ef, 'r--', linewidth=1, label=r'$E(0)$')
+		line_Ef, = axs_f[-1].plot(case.x, Ef, 'r', label=r'$E(t)$')
+		axs_f[0].plot(case.x, moments[0, :], cs[1], linestyle='--', linewidth=1, label=r'$\rho(0)$')
+		line_rho_f, = axs_f[0].plot(case.x, moments[0, :], cs[1], label=r'$\rho(t)$')
 		line_Sf = []
 		for m in range(2, min(case.n_moments, 6)):
-			line_temp, = axs_f[m-1].plot(case.x, moments[m, :], linewidth=2, label=r'$S_{{{}}}$'.format(m))
+			axs_f[m-1].plot(case.x, moments[m, :], 'c--', linewidth=1, label=r'$S_{{{}}}(0)$'.format(m))
+			line_temp, = axs_f[m-1].plot(case.x, moments[m, :], 'c', label=r'$S_{{{}}}(t)$'.format(m))
 			line_Sf.append(line_temp)
 		for ax in axs_f:
 			ax.set_xlim((-case.Lx, case.Lx))
@@ -81,20 +92,23 @@ def integrate(case):
 		plt.draw()
 		plt.pause(1e-4)
 	if case.PlotKinetic:
-		fig = plt.figure(figsize=(7, 5))
+		fig = plt.figure(figsize=(7, 6.5))
 		fig.canvas.manager.set_window_title(r'Distribution function f(x,v,t)')
 		im = plt.imshow(f.transpose(), interpolation='gaussian', origin='lower', aspect='auto', extent=(-case.Lx, case.Lx, -case.Lv, case.Lv), vmin=xp.min(f), vmax=xp.max(f))
 		plt.gca().set_ylabel('$v$')
 		plt.gca().set_xlabel('$x$')
 		plt.colorbar()
-		fig_k = plt.figure(figsize=(8, 13))
+		fig_k = plt.figure(figsize=(8, 10))
 		fig_k.canvas.manager.set_window_title('Kinetic simulation')
-		axs_k = fig_k.subplots(case.n_moments, 1, sharex=True)
-		line_Ek, = axs_k[-1].plot(case.x, Ek, 'r', linewidth=2, label=r'$E$')
-		line_rho_k, = axs_k[0].plot(case.x, moments[0, :], 'k', linewidth=2, label=r'$\rho$')
+		axs_k = fig_k.add_gridspec(case.n_moments, hspace=0.05).subplots(sharex=True)
+		axs_k[-1].plot(case.x, Ek, 'r--', linewidth=1, label=r'$E(0)$')
+		line_Ek, = axs_k[-1].plot(case.x, Ek, 'r', label=r'$E(t)$')
+		axs_k[0].plot(case.x, moments[0, :], cs[1], linestyle='--', linewidth=1, label=r'$\rho(0)$')
+		line_rho_k, = axs_k[0].plot(case.x, moments[0, :], cs[1], label=r'$\rho(t)$')
 		line_Sk = []
 		for m in range(2, case.n_moments):
-			line_temp, = axs_k[m-1].plot(case.x, moments[m, :], linewidth=2, label=r'$S_{{{}}}$'.format(m))
+			axs_k[m-1].plot(case.x, moments[m, :], 'c--', linewidth=1, label=r'$S_{{{}}}(0)$'.format(m))
+			line_temp, = axs_k[m-1].plot(case.x, moments[m, :], 'c', label=r'$S_{{{}}}(t)$'.format(m))
 			line_Sk.append(line_temp)
 		for ax in axs_k:
 			ax.set_xlim((-case.Lx, case.Lx))
@@ -116,7 +130,7 @@ def integrate(case):
 			if case.PlotFluid:
 				rho, u, G2, G3 = xp.split(fs, 4)
 				line_rho_f.set_ydata(rho)
-				line_Ef.set_ydata(case.E_fluid(rho))
+				line_Ef.set_ydata(case.E(rho))
 				S = case.compute_S(G2, G3)[:min(case.n_moments-2, 4)]
 				for m in range(min(case.n_moments-2, 4)):
 					line_Sf[m].set_ydata(S[m])

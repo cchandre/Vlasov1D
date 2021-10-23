@@ -28,7 +28,7 @@
 import numpy as xp
 from numpy.fft import fft, ifft, fftfreq
 from VP1D4f_modules import integrate
-from VP1D4f_dict import dict
+from VP1D4f_dict import dict, darkmode
 
 def main():
 	integrate(VP1D4f(dict))
@@ -44,6 +44,7 @@ class VP1D4f:
 		for key in dict:
 			setattr(self, key, dict[key])
 		self.DictParams = dict
+		self.darkmode = darkmode
 		self.x = xp.linspace(-self.Lx, self.Lx, self.Nx, endpoint=False, dtype=xp.float64)
 		self.v = xp.linspace(-self.Lv, self.Lv, self.Nv, endpoint=False, dtype=xp.float64)
 		self.x_ = xp.linspace(-self.Lx, self.Lx, self.Nx+1, dtype=xp.float64)
@@ -55,8 +56,7 @@ class VP1D4f:
 		self.tail_indx = xp.index_exp[self.Nx//4:3*self.Nx//4+1] + xp.index_exp[self.Nv//4:3*self.Nv//4+1]
 		f_ = self.f_init(self.x_, self.v_)
 		self.f = f_[:-1, :-1] / xp.trapz(xp.trapz(f_, self.v_, axis=1), self.x_)
-		self.E_fluid = lambda rho: 4 * xp.pi * self.qe * ifft(div * self.fft_filter(rho)).real
-		self.E_kinetic = lambda f: self.E_fluid(xp.trapz(xp.pad(f, ((0, 1),), mode='wrap'), self.v_, axis=1)[:-1])
+		self.E = lambda rho: 4 * xp.pi * self.qe * ifft(div * self.fft_filter(rho)).real
 		if self.integrator_kinetic == 'position-Verlet':
 			self.integr_coeff = [0.5, 1, 0.5]
 			self.integr_type = [1, 2, 1]
@@ -76,7 +76,7 @@ class VP1D4f:
 
 	def L1(self, f, E, dt):
 		ft = ifft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * self.fft_filter(f, axis=0), axis=0).real
-		Et = self.E_kinetic(ft)
+		Et = self.E(xp.trapz(xp.pad(ft, ((0, 0), (0, 1)), mode='wrap'), self.v_, axis=1))
 		return ft, Et
 
 	def L2(self, f, E, dt):
@@ -85,7 +85,7 @@ class VP1D4f:
 
 	def eqn_4f(self, t, fs):
 		rho, u, G2, G3 = xp.split(fs, 4)
-		E = self.E_fluid(rho)
+		E = self.E(rho)
 		S2 = G2**3 + G2 * (self.kappa - G2) * G3**2
 		DS2DG3 = 2 * G2 * (self.kappa - G2) * G3
 		DS2DG2 = 3 * G2**2 + (self.kappa - 2 * G2) * G3**2
@@ -127,7 +127,7 @@ class VP1D4f:
 		rho_ = xp.pad(rho, (0, 1), mode='wrap')
 		u_ = xp.pad(u, (0, 1), mode='wrap')
 		S2_ = xp.pad(self.compute_S(G2, G3)[0], (0, 1), mode='wrap')
-		E_ = xp.pad(self.E_fluid(rho), (0, 1), mode='wrap')
+		E_ = xp.pad(self.E(rho), (0, 1), mode='wrap')
 		return xp.trapz(rho_ * u_**2 + rho_**3 * S2_ + E_**2 / (4 * xp.pi), self.x_) / 2
 
 if __name__ == "__main__":
