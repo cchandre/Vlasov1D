@@ -23,7 +23,7 @@ Nv = 2**10
 epsilon = 5e-2
 f_init = lambda x, v: (1 - epsilon * xp.cos(xp.pi * x[:, None] / Lx)) * v[None, :]**2 * xp.exp(-v[None, :]**2 / 2)
 #f_init = lambda x, v: (1 - epsilon * xp.cos(xp.pi * x[:, None] / Lx)) * xp.exp(-v[None, :]**2 / 2)
-## ATTENTION: for the fluid approach to work, f_init should be with S3=0
+## ATTENTION: for the fluid approach to work as implemented in this code, f_init should be with S3=0
 kappa = 5 * (2*Lx)**(2/3)
 
 ComputeKinetic = True
