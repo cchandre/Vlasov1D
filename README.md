@@ -40,6 +40,7 @@ ___
 - *SaveFluid*: boolean; if True, save the results of the integration of the fluid equations in a `.mat` file
 - *PlotKinetic*: boolean; if True, plot the results of the integration of the Vlasov-Poisson equation
 - *PlotFluid*: boolean; if True, plot the results of the integration of the fluid equations
+- *darkmode*: boolean; if True, plots are done in dark mode
 
 ---
 Reference: C. Chandre, B.A. Shadwick, *Four-field Hamiltonian closure of the one-dimensional Vlasov-Poisson equation*, preprint (2021)
