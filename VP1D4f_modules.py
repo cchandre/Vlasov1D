@@ -35,11 +35,6 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 
-colors = ['k', 'w']
-# colors =
-
-
-
 def integrate(case):
 	f = case.f.copy()
 	moments = case.compute_moments(f, max(5, case.n_moments))
