@@ -50,13 +50,14 @@ def integrate(case):
 	fs = moments[:4, :].reshape(4*case.Nx).copy()
 	###########################################
 	## ATTENTION: works only if f has S3=0
-	if case.ComputeFluid and (xp.max(xp.abs(fs[3*case.Nx:4*case.Nx])) >= 1e-8):
+	if case.ComputeFluid and (xp.max(xp.abs(fs[3*case.Nx:4*case.Nx])) >= case.precision_fluid):
 		print('\033[33m        Warning: S3 is not zero \033[00m')
-	kappa_ref = 5 * xp.mean(moments[4, :]) / (9 * xp.mean(moments[2, :]**(5/3)))
-	if case.ComputeFluid and (xp.abs(kappa_ref - case.kappa) >= 1.5):
-		print('\033[33m        Warning: the value of kappa may not be optimal  (kappa_ref = {:.2f}) \033[00m'.format(kappa_ref))
+	else:
+		fs[3*case.Nx:4*case.Nx] = 0
+	moments[3, :] = 0
 	fs[2*case.Nx:3*case.Nx] = fs[2*case.Nx:3*case.Nx]**(1/3)
-	fs[3*case.Nx:4*case.Nx] = 0
+	if case.ComputeFluid and (case.kappa <= xp.min(fs[2*case.Nx:3*case.Nx])):
+		print('\033[33m        Warning: the value of kappa may be too small  (kappa < S2^(1/3)) \033[00m')
 	###########################################
 	Ef = case.E_fluid(fs[:case.Nx])
 	Ek = case.E_kinetic(f)
@@ -77,7 +78,6 @@ def integrate(case):
 			ax.set_xlim((-case.Lx, case.Lx))
 			ax.legend(loc='upper right')
 		axs_f[-1].set_xlabel('$x$')
-		axs_f[-1].set_ylabel('$E$')
 		plt.draw()
 		plt.pause(1e-4)
 	if case.PlotKinetic:
@@ -100,7 +100,6 @@ def integrate(case):
 			ax.set_xlim((-case.Lx, case.Lx))
 			ax.legend(loc='upper right')
 		axs_k[-1].set_xlabel('$x$')
-		axs_k[-1].set_ylabel('$E$')
 		plt.draw()
 		plt.pause(1e-4)
 	nsteps = xp.int32(xp.ceil(case.Tf / case.TimeStep))
@@ -111,7 +110,6 @@ def integrate(case):
 		if case.ComputeFluid:
 			sol = solve_ivp(case.eqn_4f, (0, dt), fs, t_eval=(0, dt), method=case.integrator_fluid, max_step=case.TimeStep, atol=case.precision_fluid, rtol=case.precision_fluid)
 			fs = sol.y[:, -1]
-			Hf = case.fluid_energy(fs)
 			if xp.min(fs[2*case.Nx:3*case.Nx]) <= 1e-14:
 				print('\033[90m        Error in the fluid simulation (S2<0) \033[00m')
 				break
@@ -141,7 +139,6 @@ def integrate(case):
 				f = f_[:-1, :-1]
 			if case.PlotKinetic:
 				moments = case.compute_moments(f, case.n_moments)
-				Hk = case.kinetic_energy(f, Ek)
 				im.set_data(f.transpose())
 				line_Ek.set_ydata(Ek)
 				line_rho_k.set_ydata(moments[0, :])
@@ -160,8 +157,10 @@ def integrate(case):
 	if case.SaveKinetic:
 		data_kinetic = f
 	if case.ComputeKinetic:
+		Hk = case.kinetic_energy(f, Ek)
 		print('\033[90m        Error in energy (kinetic) = {:.2e}'.format(xp.abs((Hk - H0k) / H0k)))
 	if case.ComputeFluid:
+		Hf = case.fluid_energy(fs)
 		print('\033[90m        Error in energy (fluid) = {:.2e}'.format(xp.abs((Hf - H0f) / H0f)))
 	plt.ioff()
 	plt.show()

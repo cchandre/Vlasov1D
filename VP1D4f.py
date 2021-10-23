@@ -88,11 +88,17 @@ class VP1D4f:
 		S2 = G2**3 + G2 * (self.kappa - G2) * G3**2
 		DS2DG3 = 2 * G2 * (self.kappa - G2) * G3
 		DS2DG2 = 3 * G2**2 + (self.kappa - 2 * G2) * G3**2
-		rho_dot = - ifft(1j * self.kx * fft(rho * u)).real
-		u_dot = - u * ifft(1j * self.kx * fft(u)).real + self.qe * E - ifft(1j * self.kx * fft(rho**3 * S2)).real / rho
-		G2_dot = - u * ifft(1j * self.kx * fft(G2)).real - ifft(1j * self.kx * fft(rho**2 * DS2DG3)).real / (2 * rho)
-		G3_dot = - u * ifft(1j * self.kx * fft(G3)).real - ifft(1j * self.kx * fft(rho**2 * DS2DG2)).real / (2 * rho)
+		rho_dot = - ifft(1j * self.kx * self.fft_filter(rho * u)).real
+		u_dot = - u * ifft(1j * self.kx * self.fft_filter(u)).real + self.qe * E - ifft(1j * self.kx * self.fft_filter(rho**3 * S2)).real / rho
+		G2_dot = - u * ifft(1j * self.kx * self.fft_filter(G2)).real - ifft(1j * self.kx * self.fft_filter(rho**2 * DS2DG3)).real / (2 * rho)
+		G3_dot = - u * ifft(1j * self.kx * self.fft_filter(G3)).real - ifft(1j * self.kx * self.fft_filter(rho**2 * DS2DG2)).real / (2 * rho)
 		return xp.hstack((rho_dot, u_dot, G2_dot, G3_dot))
+
+	def fft_filter(self, h):
+		fft_h = fft(h)
+		fft_h[xp.abs(fft_h) <= self.precision_fluid * xp.abs(fft_h).max()] = 0
+		fft_h[self.tail_indx] = 0
+		return fft_h
 
 	def compute_S(self, G2, G3):
 		return [G2**3 + G2 * (self.kappa - G2) * G3**2,
