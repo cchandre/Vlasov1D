@@ -74,12 +74,12 @@ class VP1D4f:
 			self.integr_type = [1, 2, 1, 2, 1, 2, 1, 2, 1]
 
 	def L1(self, f, E, dt):
-		ft = ifft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * fft(f, axis=0), axis=0).real
+		ft = ifft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * self.fft_filter(f, axis=0), axis=0).real
 		Et = self.E_kinetic(ft)
 		return ft, Et
 
 	def L2(self, f, E, dt):
-		ft = ifft(xp.exp(-1j * self.qe * E[:, None] * self.kv[None, :] * dt) * fft(f, axis=1), axis=1).real
+		ft = ifft(xp.exp(-1j * self.qe * E[:, None] * self.kv[None, :] * dt) * self.fft_filter(f, axis=1), axis=1).real
 		return ft, E
 
 	def eqn_4f(self, t, fs):
@@ -94,10 +94,10 @@ class VP1D4f:
 		G3_dot = - u * ifft(1j * self.kx * self.fft_filter(G3)).real - ifft(1j * self.kx * self.fft_filter(rho**2 * DS2DG2)).real / (2 * rho)
 		return xp.hstack((rho_dot, u_dot, G2_dot, G3_dot))
 
-	def fft_filter(self, h):
-		fft_h = fft(h)
+	def fft_filter(self, h, axis=0):
+		fft_h = fft(h, axis=axis)
 		fft_h[xp.abs(fft_h) <= self.precision_fluid * xp.abs(fft_h).max()] = 0
-		fft_h[self.tail_indx] = 0
+		fft_h[self.tail_indx[0:h.ndim]] = 0
 		return fft_h
 
 	def compute_S(self, G2, G3):

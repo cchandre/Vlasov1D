@@ -4,15 +4,15 @@
 
 import numpy as xp
 
-qe = -1
+qe = 1
 
-Tf = 5
+Tf = 10
 TimeStep = 1e-2
 integrator_kinetic = 'position-Verlet'
 integrator_fluid = 'RK45'
 precision_fluid = 1e-11
 
-n_moments = 4
+n_moments = 6
 frames = 100
 
 Lx = 2 * xp.pi
@@ -20,19 +20,19 @@ Lv = 6
 Nx = 2**10
 Nv = 2**10
 
-tail_indx = xp.index_exp[Nx//4:3*Nx//4+1]
+tail_indx = xp.index_exp[Nx//4:3*Nx//4+1] + xp.index_exp[Nv//4:3*Nv//4+1]
 
-epsilon = 1e-1
+epsilon = 5e-2
 f_init = lambda x, v: (1 - epsilon * xp.cos(xp.pi * x[:, None] / Lx)) * v[None, :]**2 * xp.exp(-v[None, :]**2 / 2)
 #f_init = lambda x, v: (1 - epsilon * xp.cos(xp.pi * x[:, None] / Lx)) * xp.exp(-v[None, :]**2 / 2)
 ## ATTENTION: for the fluid approach to work, f_init should be with S3=0
-kappa = 2 * (2*Lx)**(2/3)
+kappa = 5 * (2*Lx)**(2/3)
 
-ComputeKinetic = False
+ComputeKinetic = True
 ComputeFluid = True
 SaveKinetic = False
 SaveFluid = False
-PlotKinetic = False
+PlotKinetic = True
 PlotFluid = True
 
 ########################################################################################################################

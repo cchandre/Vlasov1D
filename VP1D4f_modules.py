@@ -54,7 +54,7 @@ def integrate(case):
 		print('\033[33m        Warning: S3 is not zero \033[00m')
 	else:
 		fs[3*case.Nx:4*case.Nx] = 0
-	moments[3, :] = 0
+	moments[3::2, :] = 0
 	fs[2*case.Nx:3*case.Nx] = fs[2*case.Nx:3*case.Nx]**(1/3)
 	if case.ComputeFluid and (case.kappa <= xp.min(fs[2*case.Nx:3*case.Nx])):
 		print('\033[33m        Warning: the value of kappa may be too small  (kappa < S2^(1/3)) \033[00m')
