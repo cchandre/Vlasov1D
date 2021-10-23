@@ -55,7 +55,7 @@ class VP1D4f:
 		self.tail_indx = xp.index_exp[self.Nx//4:3*self.Nx//4+1] + xp.index_exp[self.Nv//4:3*self.Nv//4+1]
 		f_ = self.f_init(self.x_, self.v_)
 		self.f = f_[:-1, :-1] / xp.trapz(xp.trapz(f_, self.v_, axis=1), self.x_)
-		self.E_fluid = lambda rho: 4 * xp.pi * self.qe * ifft(div * fft(rho)).real
+		self.E_fluid = lambda rho: 4 * xp.pi * self.qe * ifft(div * self.fft_filter(rho)).real
 		self.E_kinetic = lambda f: self.E_fluid(xp.trapz(xp.pad(f, ((0, 1),), mode='wrap'), self.v_, axis=1)[:-1])
 		if self.integrator_kinetic == 'position-Verlet':
 			self.integr_coeff = [0.5, 1, 0.5]
