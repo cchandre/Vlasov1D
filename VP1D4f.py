@@ -52,6 +52,7 @@ class VP1D4f:
 		div = xp.divide(1, 1j * self.kx, where=self.kx!=0)
 		div[0] = 0
 		self.kv = xp.pi / self.Lv * fftfreq(self.Nv, d=1/self.Nv)
+		self.tail_indx = xp.index_exp[self.Nx//4:3*self.Nx//4+1] + xp.index_exp[self.Nv//4:3*self.Nv//4+1]
 		f_ = self.f_init(self.x_, self.v_)
 		self.f = f_[:-1, :-1] / xp.trapz(xp.trapz(f_, self.v_, axis=1), self.x_)
 		self.E_fluid = lambda rho: 4 * xp.pi * self.qe * ifft(div * fft(rho)).real

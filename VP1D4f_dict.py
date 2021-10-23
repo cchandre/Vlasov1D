@@ -4,7 +4,7 @@
 
 import numpy as xp
 
-qe = 1
+qe = -1
 
 Tf = 10
 TimeStep = 1e-2
@@ -12,15 +12,13 @@ integrator_kinetic = 'position-Verlet'
 integrator_fluid = 'RK45'
 precision_fluid = 1e-11
 
-n_moments = 6
+n_moments = 4
 frames = 100
 
 Lx = 2 * xp.pi
 Lv = 6
 Nx = 2**10
 Nv = 2**10
-
-tail_indx = xp.index_exp[Nx//4:3*Nx//4+1] + xp.index_exp[Nv//4:3*Nv//4+1]
 
 epsilon = 5e-2
 f_init = lambda x, v: (1 - epsilon * xp.cos(xp.pi * x[:, None] / Lx)) * v[None, :]**2 * xp.exp(-v[None, :]**2 / 2)
@@ -52,7 +50,6 @@ dict.update({
 		'Lv': Lv,
 		'Nx': Nx,
 		'Nv': Nv,
-        'tail_indx': tail_indx,
 		'f_init': f_init,
 		'ComputeKinetic': ComputeKinetic,
 		'ComputeFluid': ComputeFluid,
