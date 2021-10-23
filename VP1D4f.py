@@ -97,7 +97,7 @@ class VP1D4f:
 	def compute_S(self, G2, G3):
 		return [G2**3 + G2 * (self.kappa - G2) * G3**2,
         		G2 * G3 * (self.kappa - G2) * (3 * G2**2 + (self.kappa - 2 * G2) * G3**2),
-				9 * self.kappa / 5 * G2**5 + 6 * G2**3 * (self.kappa - G2)**2 * G3**2 + G2 * (self.kappa - G2) * (self.kappa**2 - 3 * G2 * (self.kappa - G2)) * G3**4,
+				9 * self.kappa * G2**5 / 5 + 6 * G2**3 * (self.kappa - G2)**2 * G3**2 + G2 * (self.kappa - G2) * (self.kappa**2 - 3 * G2 * (self.kappa - G2)) * G3**4,
         		9 * self.kappa * G2**5 * (self.kappa - G2) * G3 + 10 * G2**3 * (self.kappa - G2)**3 * G3**3 + G2 * (self.kappa-G2) * (self.kappa - 2 * G2) * (self.kappa**2 - 2 * self.kappa * G2 + 2 * G2**2) * G3**5]
 
 	def compute_moments(self, f, n):

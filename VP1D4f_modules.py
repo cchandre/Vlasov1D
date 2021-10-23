@@ -47,9 +47,11 @@ plt.rcParams.update({
 def integrate(case):
 	f = case.f.copy()
 	moments = case.compute_moments(f, max(5, case.n_moments))
-	fs = moments[:4, :].reshape(4*case.Nx)
+	fs = moments[:4, :].reshape(4*case.Nx).copy()
 	###########################################
 	## ATTENTION: works only if f has S3=0
+	if case.ComputeFluid and (xp.max(xp.abs(fs[3*case.Nx:4*case.Nx])) >= 1e-8):
+		print('\033[33m        Warning: S3 is not zero \033[00m')
 	kappa_ref = 5 * xp.mean(moments[4, :]) / (9 * xp.mean(moments[2, :]**(5/3)))
 	if case.ComputeFluid and (xp.abs(kappa_ref - case.kappa) >= 1.5):
 		print('\033[33m        Warning: the value of kappa may not be optimal  (kappa_ref = {:.2f}) \033[00m'.format(kappa_ref))
@@ -80,7 +82,7 @@ def integrate(case):
 		plt.pause(1e-4)
 	if case.PlotKinetic:
 		fig = plt.figure(figsize=(7, 5))
-		fig.canvas.manager.set_window_title(r'Distribution function $f(x,v,t)$')
+		fig.canvas.manager.set_window_title(r'Distribution function f(x,v,t)')
 		im = plt.imshow(f.transpose(), interpolation='gaussian', origin='lower', aspect='auto', extent=(-case.Lx, case.Lx, -case.Lv, case.Lv), vmin=xp.min(f), vmax=xp.max(f))
 		plt.gca().set_ylabel('$v$')
 		plt.gca().set_xlabel('$x$')
@@ -88,7 +90,6 @@ def integrate(case):
 		fig_k = plt.figure(figsize=(8, 13))
 		fig_k.canvas.manager.set_window_title('Kinetic simulation')
 		axs_k = fig_k.subplots(case.n_moments, 1, sharex=True)
-		moments = case.compute_moments(f, case.n_moments)
 		line_Ek, = axs_k[-1].plot(case.x, Ek, 'r', linewidth=2, label=r'$E$')
 		line_rho_k, = axs_k[0].plot(case.x, moments[0, :], 'k', linewidth=2, label=r'$\rho$')
 		line_Sk = []
@@ -108,7 +109,7 @@ def integrate(case):
 	start = time.time()
 	for _ in trange(case.frames):
 		if case.ComputeFluid:
-			sol = solve_ivp(case.eqn_4f, (0, dt), fs, t_eval=(0, dt), method=case.integrator_fluid, max_step=case.TimeStep, atol=1, rtol=1)
+			sol = solve_ivp(case.eqn_4f, (0, dt), fs, t_eval=(0, dt), method=case.integrator_fluid, max_step=case.TimeStep, atol=case.precision_fluid, rtol=case.precision_fluid)
 			fs = sol.y[:, -1]
 			Hf = case.fluid_energy(fs)
 			if xp.min(fs[2*case.Nx:3*case.Nx]) <= 1e-14:
