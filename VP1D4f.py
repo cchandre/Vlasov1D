@@ -141,5 +141,9 @@ class VP1D4f:
 		C3 = xp.trapz(rho_ * G3_, self.x_)
 		return C1, C2, C3
 
+	def kinetic_casimirs(self, f, n):
+		f_ = xp.pad(f, ((0, 1),), mode='wrap')
+		return [xp.trapz(xp.trapz(f_**m, self.v_, axis=1), self.x_) for m in range(1, n + 1)]
+
 if __name__ == "__main__":
 	main()

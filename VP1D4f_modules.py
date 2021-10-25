@@ -53,6 +53,7 @@ def integrate(case):
 	Ef = case.E(fs[:case.Nx])
 	Ek = Ef.copy()
 	H0k = case.kinetic_energy(f, Ek)
+	C0k = case.kinetic_casimirs(f, case.n_casimirs)
 	H0f = case.fluid_energy(fs, Ef)
 	C0f = case.fluid_casimirs(fs)
 	plt.ion()
@@ -170,13 +171,13 @@ def integrate(case):
 	if case.ComputeKinetic:
 		Hk = case.kinetic_energy(f, Ek)
 		print('\033[90m        Error in energy (kinetic) = {:.2e}'.format(xp.abs(Hk - H0k)))
+		for indx, Ck in enumerate(case.kinetic_casimirs(f, case.n_casimirs)):
+			print('\033[90m        Error in Casimir C{:d} (kinetic) = {:.2e}'.format(indx + 1, xp.abs(Ck - C0k[indx])))
 	if case.ComputeFluid:
 		Hf = case.fluid_energy(fs, Ef)
-		Cf = case.fluid_casimirs(fs)
 		print('\033[90m        Error in energy (fluid) = {:.2e}'.format(xp.abs(Hf - H0f)))
-		print('\033[90m        Error in Casimir C1 (fluid) = {:.2e}'.format(xp.abs(Cf[0] - C0f[0])))
-		print('\033[90m        Error in Casimir C2 (fluid) = {:.2e}'.format(xp.abs(Cf[1] - C0f[1])))
-		print('\033[90m        Error in Casimir C3 (fluid) = {:.2e}'.format(xp.abs(Cf[2] - C0f[2])))
+		for indx, Cf in enumerate(case.fluid_casimirs(fs)):
+			print('\033[90m        Error in Casimir C{:d} (fluid) = {:.2e}'.format(indx + 1, xp.abs(Cf - C0f[indx])))
 	plt.ioff()
 	plt.show()
 

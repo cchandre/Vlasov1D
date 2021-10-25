@@ -7,12 +7,13 @@ import numpy as xp
 qe = -1
 
 Tf = 15
-TimeStep = 1e-2
+TimeStep = 1e-3
 integrator_kinetic = 'position-Verlet'
 integrator_fluid = 'RK45'
 precision_fluid = 1e-11
 
 n_moments = 4
+n_casimirs = 3
 frames = 100
 
 Lx = 2 * xp.pi
@@ -47,6 +48,7 @@ dict.update({
 		'integrator_fluid': integrator_fluid,
         'precision_fluid': precision_fluid,
 		'n_moments': n_moments,
+        'n_casimirs': n_casimirs,
         'frames': frames,
         'Lx': Lx,
 		'Lv': Lv,
