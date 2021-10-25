@@ -6,7 +6,7 @@ import numpy as xp
 
 qe = -1
 
-Tf = 10
+Tf = 15
 TimeStep = 1e-2
 integrator_kinetic = 'position-Verlet'
 integrator_fluid = 'RK45'
@@ -33,7 +33,7 @@ SaveFluid = False
 PlotKinetic = True
 PlotFluid = True
 
-darkmode = False
+darkmode = True
 
 ########################################################################################################################
 ##                                                DO NOT EDIT BELOW                                                   ##

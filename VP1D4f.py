@@ -26,7 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as xp
-from numpy.fft import fft, ifft, fftfreq
+from scipy.fft import rfft, irfft, rfftfreq
 from VP1D4f_modules import integrate
 from VP1D4f_dict import dict, darkmode
 
@@ -49,14 +49,14 @@ class VP1D4f:
 		self.v = xp.linspace(-self.Lv, self.Lv, self.Nv, endpoint=False, dtype=xp.float64)
 		self.x_ = xp.linspace(-self.Lx, self.Lx, self.Nx+1, dtype=xp.float64)
 		self.v_ = xp.linspace(-self.Lv, self.Lv, self.Nv+1, dtype=xp.float64)
-		self.kx = xp.pi / self.Lx * fftfreq(self.Nx, d=1/self.Nx)
+		self.kx = xp.pi / self.Lx * rfftfreq(self.Nx, d=1/self.Nx)
 		div = xp.divide(1, 1j * self.kx, where=self.kx!=0)
 		div[0] = 0
-		self.kv = xp.pi / self.Lv * fftfreq(self.Nv, d=1/self.Nv)
-		self.tail_indx = xp.index_exp[self.Nx//4:3*self.Nx//4+1] + xp.index_exp[self.Nv//4:3*self.Nv//4+1]
+		self.kv = xp.pi / self.Lv * rfftfreq(self.Nv, d=1/self.Nv)
+		self.tail_indx = xp.index_exp[self.Nx//4:] + xp.index_exp[self.Nv//4:]
 		f_ = self.f_init(self.x_, self.v_)
 		self.f = f_[:-1, :-1] / xp.trapz(xp.trapz(f_, self.v_, axis=1), self.x_)
-		self.E = lambda rho: 4 * xp.pi * self.qe * ifft(div * self.fft_filter(rho)).real
+		self.E = lambda rho: 4 * xp.pi * self.qe * irfft(div * self.rfft_filter(rho))
 		if self.integrator_kinetic == 'position-Verlet':
 			self.integr_coeff = [0.5, 1, 0.5]
 			self.integr_type = [1, 2, 1]
@@ -75,12 +75,12 @@ class VP1D4f:
 			self.integr_type = [1, 2, 1, 2, 1, 2, 1, 2, 1]
 
 	def L1(self, f, E, dt):
-		ft = ifft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * self.fft_filter(f, axis=0), axis=0).real
+		ft = irfft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * self.rfft_filter(f, axis=0), axis=0)
 		Et = self.E(xp.trapz(xp.pad(ft, ((0, 0), (0, 1)), mode='wrap'), self.v_, axis=1))
 		return ft, Et
 
 	def L2(self, f, E, dt):
-		ft = ifft(xp.exp(-1j * self.qe * E[:, None] * self.kv[None, :] * dt) * self.fft_filter(f, axis=1), axis=1).real
+		ft = irfft(xp.exp(-1j * self.qe * E[:, None] * self.kv[None, :] * dt) * self.rfft_filter(f, axis=1), axis=1)
 		return ft, E
 
 	def eqn_4f(self, t, fs):
@@ -89,14 +89,14 @@ class VP1D4f:
 		S2 = G2**3 + G2 * (self.kappa - G2) * G3**2
 		DS2DG3 = 2 * G2 * (self.kappa - G2) * G3
 		DS2DG2 = 3 * G2**2 + (self.kappa - 2 * G2) * G3**2
-		rho_dot = - ifft(1j * self.kx * self.fft_filter(rho * u)).real
-		u_dot = - u * ifft(1j * self.kx * self.fft_filter(u)).real + self.qe * E - ifft(1j * self.kx * self.fft_filter(rho**3 * S2)).real / rho
-		G2_dot = - u * ifft(1j * self.kx * self.fft_filter(G2)).real - ifft(1j * self.kx * self.fft_filter(rho**2 * DS2DG3)).real / (2 * rho)
-		G3_dot = - u * ifft(1j * self.kx * self.fft_filter(G3)).real - ifft(1j * self.kx * self.fft_filter(rho**2 * DS2DG2)).real / (2 * rho)
+		rho_dot = - irfft(1j * self.kx * self.rfft_filter(rho * u))
+		u_dot = - u * irfft(1j * self.kx * self.rfft_filter(u)) + self.qe * E - irfft(1j * self.kx * self.rfft_filter(rho**3 * S2)) / rho
+		G2_dot = - u * irfft(1j * self.kx * self.rfft_filter(G2)) - irfft(1j * self.kx * self.rfft_filter(rho**2 * DS2DG3)) / (2 * rho)
+		G3_dot = - u * irfft(1j * self.kx * self.rfft_filter(G3)) - irfft(1j * self.kx * self.rfft_filter(rho**2 * DS2DG2)) / (2 * rho)
 		return xp.hstack((rho_dot, u_dot, G2_dot, G3_dot))
 
-	def fft_filter(self, h, axis=0):
-		fft_h = fft(h, axis=axis)
+	def rfft_filter(self, h, axis=0):
+		fft_h = rfft(h, axis=axis)
 		fft_h[xp.abs(fft_h) <= self.precision_fluid * xp.abs(fft_h).max()] = 0
 		fft_h[self.tail_indx[0:h.ndim]] = 0
 		return fft_h
@@ -117,18 +117,29 @@ class VP1D4f:
 			table_moments = xp.vstack((table_moments, Sm[:-1]))
 		return table_moments
 
-	def kinetic_energy(self,f, E):
+	def kinetic_energy(self, f, E):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
 		E_ = xp.pad(E, (0, 1), mode='wrap')
 		return (xp.trapz(xp.trapz(self.v_[None, :]**2 * f_, self.v_, axis=1), self.x_) + xp.trapz(E_**2, self.x_) / (4 * xp.pi)) / 2
 
-	def fluid_energy(self, fs):
+	def fluid_energy(self, fs, E):
 		rho, u, G2, G3 = xp.split(fs, 4)
 		rho_ = xp.pad(rho, (0, 1), mode='wrap')
 		u_ = xp.pad(u, (0, 1), mode='wrap')
 		S2_ = xp.pad(self.compute_S(G2, G3)[0], (0, 1), mode='wrap')
-		E_ = xp.pad(self.E(rho), (0, 1), mode='wrap')
+		E_ = xp.pad(E, (0, 1), mode='wrap')
 		return xp.trapz(rho_ * u_**2 + rho_**3 * S2_ + E_**2 / (4 * xp.pi), self.x_) / 2
+
+	def fluid_casimirs(self, fs):
+		rho, u, G2, G3 = xp.split(fs, 4)
+		rho_ = xp.pad(rho, (0, 1), mode='wrap')
+		u_ = xp.pad(u, (0, 1), mode='wrap')
+		G2_ = xp.pad(G2, (0, 1), mode='wrap')
+		G3_ = xp.pad(G3, (0, 1), mode='wrap')
+		C1 = xp.trapz(u_ - rho_ * G2_ * G3_, self.x_)
+		C2 = xp.trapz(rho_ * G2_, self.x_)
+		C3 = xp.trapz(rho_ * G3_, self.x_)
+		return C1, C2, C3
 
 if __name__ == "__main__":
 	main()

@@ -53,7 +53,8 @@ def integrate(case):
 	Ef = case.E(fs[:case.Nx])
 	Ek = Ef.copy()
 	H0k = case.kinetic_energy(f, Ek)
-	H0f = case.fluid_energy(fs)
+	H0f = case.fluid_energy(fs, Ef)
+	C0f = case.fluid_casimirs(fs)
 	plt.ion()
 	if case.darkmode:
 		cs = ['k', 'w']
@@ -119,13 +120,14 @@ def integrate(case):
 		if case.ComputeFluid:
 			sol = solve_ivp(case.eqn_4f, (0, dt), fs, t_eval=(0, dt), method=case.integrator_fluid, max_step=case.TimeStep, atol=case.precision_fluid, rtol=case.precision_fluid)
 			fs = sol.y[:, -1]
-			if xp.min(fs[2*case.Nx:3*case.Nx]) <= 1e-14:
+			if xp.min(fs[2*case.Nx:3*case.Nx]) <= case.precision_fluid:
 				print('\033[90m        Error in the fluid simulation (S2<0) \033[00m')
 				break
 			if case.PlotFluid:
 				rho, u, G2, G3 = xp.split(fs, 4)
+				Ef = case.E(rho)
 				line_rho_f.set_ydata(rho)
-				line_Ef.set_ydata(case.E(rho))
+				line_Ef.set_ydata(Ef)
 				S = case.compute_S(G2, G3)[:min(case.n_moments-2, 4)]
 				for m in range(min(case.n_moments-2, 4)):
 					line_Sf[m].set_ydata(S[m])
@@ -142,7 +144,7 @@ def integrate(case):
 						f, Ek = case.L1(f, Ek, coeff * case.TimeStep)
 					elif type == 2:
 						f, Ek = case.L2(f, Ek, coeff * case.TimeStep)
-				f[f<=1e-14] = 0
+				f[f<=case.precision_fluid] = 0
 				f_ = xp.pad(f, ((0, 1),), mode='wrap')
 				f_ /= xp.trapz(xp.trapz(f_, case.v_, axis=1), case.x_)
 				f = f_[:-1, :-1]
@@ -167,10 +169,14 @@ def integrate(case):
 		data_kinetic = f
 	if case.ComputeKinetic:
 		Hk = case.kinetic_energy(f, Ek)
-		print('\033[90m        Error in energy (kinetic) = {:.2e}'.format(xp.abs((Hk - H0k) / H0k)))
+		print('\033[90m        Error in energy (kinetic) = {:.2e}'.format(xp.abs(Hk - H0k)))
 	if case.ComputeFluid:
-		Hf = case.fluid_energy(fs)
-		print('\033[90m        Error in energy (fluid) = {:.2e}'.format(xp.abs((Hf - H0f) / H0f)))
+		Hf = case.fluid_energy(fs, Ef)
+		Cf = case.fluid_casimirs(fs)
+		print('\033[90m        Error in energy (fluid) = {:.2e}'.format(xp.abs(Hf - H0f)))
+		print('\033[90m        Error in Casimir C1 (fluid) = {:.2e}'.format(xp.abs(Cf[0] - C0f[0])))
+		print('\033[90m        Error in Casimir C2 (fluid) = {:.2e}'.format(xp.abs(Cf[1] - C0f[1])))
+		print('\033[90m        Error in Casimir C3 (fluid) = {:.2e}'.format(xp.abs(Cf[2] - C0f[2])))
 	plt.ioff()
 	plt.show()
 
