@@ -56,7 +56,7 @@ class VP1D4f:
 		self.tail_indx = xp.index_exp[self.Nx//4:] + xp.index_exp[self.Nv//4:]
 		f_ = self.f_init(self.x_, self.v_)
 		self.f = f_[:-1, :-1] / xp.trapz(xp.trapz(f_, self.v_, axis=1), self.x_)
-		self.E = lambda rho: 4 * xp.pi * self.qe * irfft(div * self.rfft_filter(rho))
+		self.E = lambda rho: self.qe * irfft(div * self.rfft_filter(rho))
 		if self.integrator_kinetic == 'position-Verlet':
 			self.integr_coeff = [0.5, 1, 0.5]
 			self.integr_type = [1, 2, 1]
@@ -103,7 +103,7 @@ class VP1D4f:
 
 	def compute_S(self, G2, G3):
 		return [G2**3 + G2 * (self.kappa - G2) * G3**2,
-        		G2 * G3 * (self.kappa - G2) * (3 * G2**2 + (self.kappa - 2 * G2) * G3**2),
+        		G2 * (self.kappa - G2) * G3 * (3 * G2**2 + (self.kappa - 2 * G2) * G3**2),
 				9 * self.kappa * G2**5 / 5 + 6 * G2**3 * (self.kappa - G2)**2 * G3**2 + G2 * (self.kappa - G2) * (self.kappa**2 - 3 * G2 * (self.kappa - G2)) * G3**4,
         		9 * self.kappa * G2**5 * (self.kappa - G2) * G3 + 10 * G2**3 * (self.kappa - G2)**3 * G3**3 + G2 * (self.kappa-G2) * (self.kappa - 2 * G2) * (self.kappa**2 - 2 * self.kappa * G2 + 2 * G2**2) * G3**5]
 
@@ -120,7 +120,7 @@ class VP1D4f:
 	def kinetic_energy(self, f, E):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
 		E_ = xp.pad(E, (0, 1), mode='wrap')
-		return (xp.trapz(xp.trapz(self.v_[None, :]**2 * f_, self.v_, axis=1), self.x_) + xp.trapz(E_**2, self.x_) / (4 * xp.pi)) / 2
+		return (xp.trapz(xp.trapz(self.v_[None, :]**2 * f_, self.v_, axis=1), self.x_) + xp.trapz(E_**2, self.x_)) / 2
 
 	def fluid_energy(self, fs, E):
 		rho, u, G2, G3 = xp.split(fs, 4)
@@ -128,7 +128,7 @@ class VP1D4f:
 		u_ = xp.pad(u, (0, 1), mode='wrap')
 		S2_ = xp.pad(self.compute_S(G2, G3)[0], (0, 1), mode='wrap')
 		E_ = xp.pad(E, (0, 1), mode='wrap')
-		return xp.trapz(rho_ * u_**2 + rho_**3 * S2_ + E_**2 / (4 * xp.pi), self.x_) / 2
+		return xp.trapz(rho_ * u_**2 + rho_**3 * S2_ + E_**2, self.x_) / 2
 
 	def fluid_casimirs(self, fs):
 		rho, u, G2, G3 = xp.split(fs, 4)

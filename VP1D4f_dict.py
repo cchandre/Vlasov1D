@@ -4,10 +4,10 @@
 
 import numpy as xp
 
-qe = -1
+qe = 1
 
-Tf = 15
-TimeStep = 1e-3
+Tf = 10
+TimeStep = 1e-1
 integrator_kinetic = 'position-Verlet'
 integrator_fluid = 'RK45'
 precision_fluid = 1e-11
@@ -17,11 +17,11 @@ n_casimirs = 3
 frames = 100
 
 Lx = 2 * xp.pi
-Lv = 6
+Lv = 5 * xp.sqrt(3)
 Nx = 2**10
 Nv = 2**10
 
-epsilon = 5e-2
+epsilon = 0.1
 f_init = lambda x, v: (1 - epsilon * xp.cos(xp.pi * x[:, None] / Lx)) * v[None, :]**2 * xp.exp(-v[None, :]**2 / 2)
 #f_init = lambda x, v: (1 - epsilon * xp.cos(xp.pi * x[:, None] / Lx)) * xp.exp(-v[None, :]**2 / 2)
 ## ATTENTION: for the fluid approach to work as implemented in this code, f_init should be with S3=0
