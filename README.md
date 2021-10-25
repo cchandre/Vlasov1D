@@ -26,6 +26,7 @@ ___
 - *integrator_fluid*: string ('RK45', ‘RK23’, ‘DOP853’, ‘Radau’, ‘BDF’, ‘LSODA’); choice of solver for the integration of the fluid equation
 - *precision_fluid*: double; numerical precision of the integrator for the fluid equations
 - *n_moments*: integer; number of moments to be represented
+- *n_casimirs*: integrer; number of Casimir invariants (of the Vlasov model) to be monitored 
 - *frames*: integer; number of frames to be represented in time
 
 - *Lx*: double; the *x*-axis is (-*Lx*, *Lx*)
