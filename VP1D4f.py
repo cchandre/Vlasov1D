@@ -56,7 +56,7 @@ class VP1D4f:
 		self.tail_indx = xp.index_exp[self.Nx//4:] + xp.index_exp[self.Nv//4:]
 		f_ = self.f_init(self.x_, self.v_)
 		self.f = f_[:-1, :-1] / xp.trapz(xp.trapz(f_, self.v_, axis=1), self.x_)
-		self.E = lambda rho: self.qe * irfft(div * self.rfft_filter(rho))
+		self.E = lambda rho: irfft(div * self.rfft_filter(1 - rho))
 		if self.integrator_kinetic == 'position-Verlet':
 			self.integr_coeff = [0.5, 1, 0.5]
 			self.integr_type = [1, 2, 1]
@@ -80,7 +80,7 @@ class VP1D4f:
 		return ft, Et
 
 	def L2(self, f, E, dt):
-		ft = irfft(xp.exp(-1j * self.qe * E[:, None] * self.kv[None, :] * dt) * self.rfft_filter(f, axis=1), axis=1)
+		ft = irfft(xp.exp(-1j * E[:, None] * self.kv[None, :] * dt) * self.rfft_filter(f, axis=1), axis=1)
 		return ft, E
 
 	def eqn_4f(self, t, fs):
@@ -90,7 +90,7 @@ class VP1D4f:
 		DS2DG3 = 2 * G2 * (self.kappa - G2) * G3
 		DS2DG2 = 3 * G2**2 + (self.kappa - 2 * G2) * G3**2
 		rho_dot = - irfft(1j * self.kx * self.rfft_filter(rho * u))
-		u_dot = - u * irfft(1j * self.kx * self.rfft_filter(u)) + self.qe * E - irfft(1j * self.kx * self.rfft_filter(rho**3 * S2)) / rho
+		u_dot = - u * irfft(1j * self.kx * self.rfft_filter(u)) + E - irfft(1j * self.kx * self.rfft_filter(rho**3 * S2)) / rho
 		G2_dot = - u * irfft(1j * self.kx * self.rfft_filter(G2)) - irfft(1j * self.kx * self.rfft_filter(rho**2 * DS2DG3)) / (2 * rho)
 		G3_dot = - u * irfft(1j * self.kx * self.rfft_filter(G3)) - irfft(1j * self.kx * self.rfft_filter(rho**2 * DS2DG2)) / (2 * rho)
 		return xp.hstack((rho_dot, u_dot, G2_dot, G3_dot))

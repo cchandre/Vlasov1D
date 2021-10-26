@@ -73,14 +73,15 @@ def integrate(case):
 		fig_f = plt.figure(figsize=(8, 10))
 		fig_f.canvas.manager.set_window_title('Fluid simulation')
 		axs_f = fig_f.add_gridspec(case.n_moments, hspace=0.05).subplots(sharex=True)
+		axs_f[0].set_title('$\omega_p t = 0 $', loc='right', pad=20)
 		axs_f[-1].plot(case.x, Ef, 'r--', linewidth=1, label=r'$E(0)$')
 		line_Ef, = axs_f[-1].plot(case.x, Ef, 'r', label=r'$E(t)$')
 		axs_f[0].plot(case.x, moments[0, :], cs[1], linestyle='--', linewidth=1, label=r'$\rho(0)$')
 		line_rho_f, = axs_f[0].plot(case.x, moments[0, :], cs[1], label=r'$\rho(t)$')
 		line_Sf = []
 		for m in range(2, min(case.n_moments, 6)):
-			axs_f[m-1].plot(case.x, moments[m, :], 'c--', linewidth=1, label=r'$S_{{{}}}(0)$'.format(m))
-			line_temp, = axs_f[m-1].plot(case.x, moments[m, :], 'c', label=r'$S_{{{}}}(t)$'.format(m))
+			axs_f[m-1].plot(case.x, moments[0, :]**(m+1) * moments[m, :], 'c--', linewidth=1, label=r'$\rho^{{{}}} S_{{{}}}(0)$'.format(m+1, m))
+			line_temp, = axs_f[m-1].plot(case.x, moments[0, :]**(m+1) * moments[m, :], 'c', label=r'$\rho^{{{}}} S_{{{}}}(t)$'.format(m+1, m))
 			line_Sf.append(line_temp)
 		for ax in axs_f:
 			ax.set_xlim((-case.Lx, case.Lx))
@@ -98,14 +99,15 @@ def integrate(case):
 		fig_k = plt.figure(figsize=(8, 10))
 		fig_k.canvas.manager.set_window_title('Kinetic simulation')
 		axs_k = fig_k.add_gridspec(case.n_moments, hspace=0.05).subplots(sharex=True)
+		axs_k[0].set_title('$\omega_p t = 0 $', loc='right', pad=20)
 		axs_k[-1].plot(case.x, Ek, 'r--', linewidth=1, label=r'$E(0)$')
 		line_Ek, = axs_k[-1].plot(case.x, Ek, 'r', label=r'$E(t)$')
 		axs_k[0].plot(case.x, moments[0, :], cs[1], linestyle='--', linewidth=1, label=r'$\rho(0)$')
 		line_rho_k, = axs_k[0].plot(case.x, moments[0, :], cs[1], label=r'$\rho(t)$')
 		line_Sk = []
 		for m in range(2, case.n_moments):
-			axs_k[m-1].plot(case.x, moments[m, :], 'c--', linewidth=1, label=r'$S_{{{}}}(0)$'.format(m))
-			line_temp, = axs_k[m-1].plot(case.x, moments[m, :], 'c', label=r'$S_{{{}}}(t)$'.format(m))
+			axs_k[m-1].plot(case.x, moments[0, :]**(m+1) * moments[m, :], 'c--', linewidth=1, label=r'$\rho^{{{}}} S_{{{}}}(0)$'.format(m+1, m))
+			line_temp, = axs_k[m-1].plot(case.x, moments[0, :]**(m+1) * moments[m, :], 'c', label=r'$\rho^{{{}}} S_{{{}}}(t)$'.format(m+1, m))
 			line_Sk.append(line_temp)
 		for ax in axs_k:
 			ax.set_xlim((-case.Lx, case.Lx))
@@ -113,25 +115,24 @@ def integrate(case):
 		axs_k[-1].set_xlabel('$x$')
 		plt.draw()
 		plt.pause(1e-4)
-	nsteps = xp.int32(xp.ceil(case.Tf / case.TimeStep))
-	n_int = nsteps // case.frames
-	dt = case.TimeStep * (nsteps // case.frames)
+	TimeStep = 1 / case.nsteps
 	start = time.time()
-	for _ in trange(case.frames):
+	for _ in trange(xp.int32(case.Tf)):
 		if case.ComputeFluid:
-			sol = solve_ivp(case.eqn_4f, (0, dt), fs, t_eval=(0, dt), method=case.integrator_fluid, max_step=case.TimeStep, atol=case.precision_fluid, rtol=case.precision_fluid)
+			sol = solve_ivp(case.eqn_4f, (0, 1), fs, t_eval=(0, 1), method=case.integrator_fluid, max_step=TimeStep, atol=case.precision_fluid, rtol=case.precision_fluid)
 			fs = sol.y[:, -1]
 			if xp.min(fs[2*case.Nx:3*case.Nx]) <= case.precision_fluid:
 				print('\033[90m        Error in the fluid simulation (S2<0) \033[00m')
 				break
 			if case.PlotFluid:
+				axs_f[0].set_title('$\omega_p t = {{{}}}$'.format(_), loc='right', pad=20)
 				rho, u, G2, G3 = xp.split(fs, 4)
 				Ef = case.E(rho)
 				line_rho_f.set_ydata(rho)
 				line_Ef.set_ydata(Ef)
 				S = case.compute_S(G2, G3)[:min(case.n_moments-2, 4)]
 				for m in range(min(case.n_moments-2, 4)):
-					line_Sf[m].set_ydata(S[m])
+					line_Sf[m].set_ydata(rho**(m+1) * S[m])
 				for ax in axs_f:
 					ax.relim()
 					ax.autoscale()
@@ -139,23 +140,24 @@ def integrate(case):
 				plt.draw()
 				plt.pause(1e-4)
 		if case.ComputeKinetic:
-			for t in range(n_int):
+			for t in range(case.nsteps):
 				for coeff, type in zip(case.integr_coeff, case.integr_type):
 					if type == 1:
-						f, Ek = case.L1(f, Ek, coeff * case.TimeStep)
+						f, Ek = case.L1(f, Ek, coeff * TimeStep)
 					elif type == 2:
-						f, Ek = case.L2(f, Ek, coeff * case.TimeStep)
+						f, Ek = case.L2(f, Ek, coeff * TimeStep)
 				f[f<=case.precision_fluid] = 0
 				f_ = xp.pad(f, ((0, 1),), mode='wrap')
 				f_ /= xp.trapz(xp.trapz(f_, case.v_, axis=1), case.x_)
 				f = f_[:-1, :-1]
 			if case.PlotKinetic:
+				axs_k[0].set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=20)
 				moments = case.compute_moments(f, case.n_moments)
 				im.set_data(f.transpose())
 				line_Ek.set_ydata(Ek)
 				line_rho_k.set_ydata(moments[0, :])
 				for m in range(2, case.n_moments):
-					line_Sk[m - 2].set_ydata(moments[m, :])
+					line_Sk[m - 2].set_ydata(moments[0, :]**(m+1) * moments[m, :])
 				for ax in axs_k:
 					ax.relim()
 					ax.autoscale()
