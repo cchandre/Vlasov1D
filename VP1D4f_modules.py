@@ -36,6 +36,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def integrate(case):
+	timestr = time.strftime("%Y%m%d_%H%M")
 	f = case.f.copy()
 	moments = case.compute_moments(f, max(5, case.n_moments))
 	fs = moments[:4, :].reshape(4*case.Nx).copy()
@@ -89,6 +90,8 @@ def integrate(case):
 		axs_f[-1].set_xlabel('$x$')
 		plt.draw()
 		plt.pause(1e-4)
+		if case.SaveFluid:
+			suppl_f = case.output(Ef)
 	if case.PlotKinetic:
 		fig = plt.figure(figsize=(7, 6.5))
 		fig.canvas.manager.set_window_title(r'Distribution function f(x,v,t)')
@@ -117,6 +120,8 @@ def integrate(case):
 		axs_k[-1].set_xlabel('$x$')
 		plt.draw()
 		plt.pause(1e-4)
+	if case.SaveFluid:
+		suppl_k = case.output(Ek)
 	TimeStep = 1 / case.nsteps
 	start = time.time()
 	for _ in trange(xp.int32(case.Tf)):
@@ -141,6 +146,8 @@ def integrate(case):
 					ax.set_xlim((-case.Lx, case.Lx))
 				plt.draw()
 				plt.pause(1e-4)
+			if case.SaveFluid:
+				suppl_f = xp.vstack((suppl_f, case.output(Ef)))
 		if case.ComputeKinetic:
 			for t in range(case.nsteps):
 				for coeff, type in zip(case.integr_coeff, case.integr_type):
@@ -167,12 +174,14 @@ def integrate(case):
 					ax.set_xlim((-case.Lx, case.Lx))
 				plt.draw()
 				plt.pause(1e-4)
+			if case.SaveKinetic:
+				suppl_k = xp.vstack((suppl_k, case.output(Ek)))
 	print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
 	data_kinetic, data_fluid = [], []
 	if case.SaveFluid:
-		data_fluid = fs
+		save_data(fs, suppl_f, timestr, case, model='Fluid')
 	if case.SaveKinetic:
-		data_kinetic = f
+		save_data(f, suppl_k, timestr, case, model='Kinetic')
 	if case.ComputeKinetic:
 		Hk = case.kinetic_energy(f, Ek)
 		print('\033[90m        Error in energy (kinetic) = {:.2e}'.format(xp.abs(Hk - H0k)))
@@ -186,13 +195,11 @@ def integrate(case):
 	plt.ioff()
 	plt.show()
 
-def save_data(data_fluid, data_kinetic, timestr, case, display=True):
-	if case.SaveFluid or case.SaveKinetic:
-		mdic = case.DictParams.copy()
-		mdic.update({'data_k': data_kinetic, 'data_f': data_fluid})
-		date_today = date.today().strftime(" %B %d, %Y")
-		mdic.update({'date': date_today, 'author': 'cristel.chandre@univ-amu.fr'})
-		name_file = type(case).__name__ + '_' + timestr + '.mat'
-		savemat(name_file, mdic)
-		if display:
-			print('\033[90m        Results saved in {} \033[00m'.format(name_file))
+def save_data(data, suppl, timestr, case, model=[]):
+	mdic = case.DictParams.copy()
+	mdic.update({'data': data, 'suppl': suppl})
+	date_today = date.today().strftime(" %B %d, %Y")
+	mdic.update({'date': date_today, 'author': 'cristel.chandre@univ-amu.fr'})
+	name_file = type(case).__name__ + '_' + model + '_' + timestr + '.mat'
+	savemat(name_file, mdic)
+	print('\033[90m        {} results saved in {} \033[00m'.format(model, name_file))
