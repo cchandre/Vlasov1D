@@ -100,7 +100,7 @@ def integrate(case):
 		plt.colorbar()
 		fig_k = plt.figure(figsize=(8, 10))
 		fig_k.canvas.manager.set_window_title('Kinetic simulation')
-		axs_k = fig_k.add_gridspec(case.n_moments, hspace=0.05).subplots(sharex=True)
+		axs_k = fig_k.add_gridspec(case.n_moments, hspace=0.2).subplots(sharex=True)
 		axs_k[0].set_title('$\omega_p t = 0 $', loc='right', pad=20)
 		axs_k[-1].plot(case.x, Ek, 'r--', linewidth=1, label=r'$E(0)$')
 		line_Ek, = axs_k[-1].plot(case.x, Ek, 'r', label=r'$E(t)$')
