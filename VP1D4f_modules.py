@@ -68,11 +68,11 @@ def integrate(case):
 	plt.rc('xtick', color=cs[1], labelcolor=cs[1])
 	plt.rc('ytick', color=cs[1], labelcolor=cs[1])
 	plt.rc('lines', linewidth=3)
-	plt.rc('image', cmap='Blues')
+	plt.rc('image', cmap='bwr')
 	if case.PlotFluid:
 		fig_f = plt.figure(figsize=(8, 10))
 		fig_f.canvas.manager.set_window_title('Fluid simulation')
-		axs_f = fig_f.add_gridspec(case.n_moments, hspace=0.05).subplots(sharex=True)
+		axs_f = fig_f.add_gridspec(case.n_moments, hspace=0.2).subplots(sharex=True)
 		axs_f[0].set_title('$\omega_p t = 0 $', loc='right', pad=20)
 		axs_f[-1].plot(case.x, Ef, 'r--', linewidth=1, label=r'$E(0)$')
 		line_Ef, = axs_f[-1].plot(case.x, Ef, 'r', label=r'$E(t)$')
@@ -92,6 +92,8 @@ def integrate(case):
 	if case.PlotKinetic:
 		fig = plt.figure(figsize=(7, 6.5))
 		fig.canvas.manager.set_window_title(r'Distribution function f(x,v,t)')
+		ax_fxvt = plt.gca()
+		ax_fxvt.set_title('$\omega_p t = 0 $', loc='right', pad=-10)
 		im = plt.imshow(f.transpose(), interpolation='gaussian', origin='lower', aspect='auto', extent=(-case.Lx, case.Lx, -case.Lv, case.Lv), vmin=xp.min(f), vmax=xp.max(f))
 		plt.gca().set_ylabel('$v$')
 		plt.gca().set_xlabel('$x$')
@@ -125,7 +127,7 @@ def integrate(case):
 				print('\033[90m        Error in the fluid simulation (S2<0) \033[00m')
 				break
 			if case.PlotFluid:
-				axs_f[0].set_title('$\omega_p t = {{{}}}$'.format(_), loc='right', pad=20)
+				axs_f[0].set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=20)
 				rho, u, G2, G3 = xp.split(fs, 4)
 				Ef = case.E(rho)
 				line_rho_f.set_ydata(rho)
@@ -148,9 +150,10 @@ def integrate(case):
 						f, Ek = case.L2(f, Ek, coeff * TimeStep)
 				f[f<=case.precision_fluid] = 0
 				f_ = xp.pad(f, ((0, 1),), mode='wrap')
-				f_ /= xp.trapz(xp.trapz(f_, case.v_, axis=1), case.x_)
+				f_ *= case.f0 / xp.trapz(xp.trapz(f_, case.v_, axis=1), case.x_)
 				f = f_[:-1, :-1]
 			if case.PlotKinetic:
+				ax_fxvt.set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=-10)
 				axs_k[0].set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=20)
 				moments = case.compute_moments(f, case.n_moments)
 				im.set_data(f.transpose())
