@@ -132,6 +132,10 @@ class VP1D4f:
 		E_ = xp.pad(E, (0, 1), mode='wrap')
 		return xp.trapz(rho_ * u_**2 + rho_**3 * S2_ + E_**2, self.x_) / 2
 
+	def kinetic_casimirs(self, f, n):
+		f_ = xp.pad(f, ((0, 1),), mode='wrap')
+		return [xp.trapz(xp.trapz(f_**m, self.v_, axis=1), self.x_) for m in range(1, n+1)]
+
 	def fluid_casimirs(self, fs):
 		rho, u, G2, G3 = xp.split(fs, 4)
 		rho_ = xp.pad(rho, (0, 1), mode='wrap')
@@ -142,10 +146,6 @@ class VP1D4f:
 		C2 = xp.trapz(rho_ * G2_, self.x_)
 		C3 = xp.trapz(rho_ * G3_, self.x_)
 		return C1, C2, C3
-
-	def kinetic_casimirs(self, f, n):
-		f_ = xp.pad(f, ((0, 1),), mode='wrap')
-		return [xp.trapz(xp.trapz(f_**m, self.v_, axis=1), self.x_) for m in range(1, n + 1)]
 
 if __name__ == "__main__":
 	main()
