@@ -32,6 +32,8 @@ ___
 - *Nx*: integer; number of points in *x* to represent the field variables
 - *Nv*: integer; number of points in *v* to represent the field variables
 - *f_init*: lambda function; initial distribution *f*(*x*,*v*,t=0)
+  
+- *output_E_modes*: integer; number of Fourier modes of *E(t)* to be saved in the `.mat` file
 
 - *ComputeKinetic*: boolean; if True, integrate the Vlasov-Poisson equation 
 - *ComputeFluid*: boolean; if True, integrate the fluid equations
