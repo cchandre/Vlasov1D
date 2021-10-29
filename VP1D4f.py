@@ -58,7 +58,7 @@ class VP1D4f:
 		self.f = f_[:-1, :-1]
 		self.f0 = xp.trapz(xp.trapz(f_, self.v_, axis=1), self.x_)
 		self.E = lambda rho: irfft(div * self.rfft_filter(rho))
-		self.output = lambda var: rfft(var)[0:self.output_E_modes] / var.size
+		self.output = lambda t, var: xp.append(t, rfft(var)[0:self.output_E_modes] / var.size)
 		if self.integrator_kinetic == 'position-Verlet':
 			self.integr_coeff = [0.5, 1, 0.5]
 			self.integr_type = [1, 2, 1]

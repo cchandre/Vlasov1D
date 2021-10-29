@@ -3,37 +3,37 @@
 ########################################################################################################################
 
 import numpy as xp
-from scipy.fft import rfft
 
-kappa = 1.35
+kappa = 1.31
 
-Tf = 100
+Tf = 48
 integrator_kinetic = 'position-Verlet'
-nsteps = 20
+nsteps = 16
 integrator_fluid = 'RK45'
-precision_fluid = 1e-12
+precision_fluid = 1e-11
 
 n_moments = 4
 n_casimirs = 3
 
 Lx = 2 * xp.pi
-Lv = 8
-Nx = 2**12
-Nv = 2**12
+Lv = 4
+Nx = 2**11
+Nv = 2**11
 
 A = 1e-6
 k = 0.5
 f_init = lambda x, v: (1 - A * xp.cos(k * x[:, None])) * v[None, :]**2 * xp.exp(-v[None, :]**2 / 2) / xp.sqrt(2 * xp.pi)
 ## ATTENTION: for the fluid approach to work as implemented in this code, f_init should be with S3=0
 
-output_E_modes = 10
+output_E_modes = 8
 
-ComputeKinetic = False
-ComputeFluid = True
+ComputeKinetic = True
+PlotKinetic = True
 SaveKinetic = False
-SaveFluid = True
-PlotKinetic = False
+
+ComputeFluid = True
 PlotFluid = True
+SaveFluid = False
 
 darkmode = True
 
@@ -56,9 +56,9 @@ dict.update({
 		'f_init': f_init,
         'output_E_modes': output_E_modes,
 		'ComputeKinetic': ComputeKinetic,
-		'ComputeFluid': ComputeFluid,
+        'PlotKinetic': PlotKinetic,
 		'SaveKinetic': SaveKinetic,
-		'SaveFluid': SaveFluid,
-		'PlotKinetic': PlotKinetic,
-		'PlotFluid': PlotFluid})
+        'ComputeFluid': ComputeFluid,
+        'PlotFluid': PlotFluid,
+		'SaveFluid': SaveFluid})
 ########################################################################################################################
