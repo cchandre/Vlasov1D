@@ -22,7 +22,7 @@ ___
 - *Tf*: double; duration of the integration (in units of *&omega;<sub>p</sub><sup>-1</sup>*)
 - *integrator_kinetic*: string ('position-Verlet', 'velocity-Verlet', 'Forest-Ruth', 'PEFRL'); choice of solver for the integration of the Vlasov equation
 - *nsteps*: integer; number of steps in one period of plasma oscillations (2 *&pi;*/*&omega;<sub>p</sub><sup>*) for the integration of the Vlasov equation
-- *integrator_fluid*: string ('RK45', ‘RK23’, ‘DOP853’, ‘Radau’, ‘BDF’, ‘LSODA’); choice of solver for the integration of the fluid equation
+- *integrator_fluid*: string ('RK45', ‘RK23’, ‘DOP853’, ‘BDF’, ‘LSODA’); choice of solver for the integration of the fluid equation
 - *precision_fluid*: double; numerical precision of the integrator for the fluid equations
 - *n_moments*: integer; number of moments to be represented
 - *n_casimirs*: integrer; number of Casimir invariants (of the Vlasov model) to be monitored 
