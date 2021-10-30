@@ -23,7 +23,6 @@ Nv = 2**11
 A = 1e-6
 k = 0.5
 f_init = lambda x, v: (1 - A * xp.cos(k * x[:, None])) * v[None, :]**2 * xp.exp(-v[None, :]**2 / 2) / xp.sqrt(2 * xp.pi)
-## ATTENTION: for the fluid approach to work as implemented in this code, f_init should be with S3=0
 
 output_E_modes = 8
 

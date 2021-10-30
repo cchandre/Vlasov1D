@@ -27,6 +27,7 @@
 
 import numpy as xp
 from scipy.integrate import solve_ivp
+from scipy.optimize import root
 from tqdm import trange
 from scipy.io import savemat
 import time
@@ -39,21 +40,22 @@ def integrate(case):
 	timestr = time.strftime("%Y%m%d_%H%M")
 	f = case.f.copy()
 	moments = case.compute_moments(f, max(5, case.n_moments))
+	moments[xp.abs(moments) <= case.precision_fluid] = 0
 	fs = moments[:4, :].reshape(4*case.Nx).copy()
-	###########################################
-	## ATTENTION: works only if f has S3=0
-	if case.ComputeFluid and (xp.max(xp.abs(fs[3*case.Nx:4*case.Nx])) >= case.precision_fluid):
-		print('\033[33m        Warning: S3 is not zero \033[00m')
+	compute_G = lambda G: case.compute_S0(G) - fs[2*case.Nx:]
+	sol = root(compute_G, case.compute_G0(fs[2*case.Nx:]), tol=case.precision_fluid, method='krylov')
+	if case.ComputeFluid and not sol.success:
+		print('\033[33m        Error: a correct determination for G2 and G3 was not found \033[00m')
+		print('\033[33m               -> fluid computation is skipped \033[00m')
+		case.ComputeFluid = False
+		case.PlotFluid = False
+		case.SaveFluid = False
 	else:
-		fs[3*case.Nx:4*case.Nx] = 0
-	moments[3::2, :] = 0
-	fs[2*case.Nx:3*case.Nx] = fs[2*case.Nx:3*case.Nx]**(1/3)
-	if case.ComputeFluid and (case.kappa <= xp.min(fs[2*case.Nx:3*case.Nx])):
-		print('\033[33m        Warning: the value of kappa may be too small  (kappa < S2^(1/3)) \033[00m')
-	###########################################
-	Ef = case.E(fs[:case.Nx])
-	H0f = case.fluid_energy(fs, Ef)
-	C0f = case.fluid_casimirs(fs)
+		fs[2*case.Nx:] = sol.x
+		fs[xp.abs(fs) <= case.precision_fluid] = 0
+		Ef = case.E(fs[:case.Nx])
+		H0f = case.fluid_energy(fs, Ef)
+		C0f = case.fluid_casimirs(fs)
 	Ek = Ef.copy()
 	H0k = case.kinetic_energy(f, Ek)
 	C0k = case.kinetic_casimirs(f, case.n_casimirs)

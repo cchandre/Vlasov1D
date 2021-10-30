@@ -109,6 +109,19 @@ class VP1D4f:
 				9 * self.kappa * G2**5 / 5 + 6 * G2**3 * (self.kappa - G2)**2 * G3**2 + G2 * (self.kappa - G2) * (self.kappa**2 - 3 * G2 * (self.kappa - G2)) * G3**4,
         		9 * self.kappa * G2**5 * (self.kappa - G2) * G3 + 10 * G2**3 * (self.kappa - G2)**3 * G3**3 + G2 * (self.kappa-G2) * (self.kappa - 2 * G2) * (self.kappa**2 - 2 * self.kappa * G2 + 2 * G2**2) * G3**5]
 
+	def compute_S0(self, G):
+		G2 = G[:self.Nx]
+		G3 = G[self.Nx:]
+		return xp.array([G2**3 + G2 * (self.kappa - G2) * G3**2,
+        		G2 * (self.kappa - G2) * G3 * (3 * G2**2 + (self.kappa - 2 * G2) * G3**2)]).flatten()
+
+	def compute_G0(self, S):
+		S2 = S[:self.Nx]
+		S3 = S[self.Nx:]
+		sigma = self.kappa - S2**(1/3)
+		return xp.array([S2**(1/3) - S3**2 / (27 * S2**(7/3) * sigma),
+				S3 / (3 * S2 * sigma)]).flatten()
+
 	def compute_moments(self, f, n):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
 		rho = xp.trapz(f_, self.v_, axis=1)
