@@ -21,19 +21,19 @@ ___
 - *kappa*: double; value of &kappa; defining the fluid reduction 
 - *Tf*: double; duration of the integration (in units of *&omega;<sub>p</sub><sup>-1</sup>*)
 - *integrator_kinetic*: string ('position-Verlet', 'velocity-Verlet', 'Forest-Ruth', 'PEFRL'); choice of solver for the integration of the Vlasov equation
-- *nsteps*: integer; number of steps in one period of plasma oscillations (2 *&pi;*/*&omega;<sub>p</sub><sup>*) for the integration of the Vlasov equation
+- *nsteps*: integer; number of steps in one period of plasma oscillations (1/*&omega;<sub>p</sub><sup>*) for the integration of the Vlasov equation
 - *integrator_fluid*: string ('RK45', ‘RK23’, ‘DOP853’, ‘BDF’, ‘LSODA’); choice of solver for the integration of the fluid equation
 - *precision_fluid*: double; numerical precision of the integrator for the fluid equations
 - *n_moments*: integer; number of moments to be represented
-- *n_casimirs*: integrer; number of Casimir invariants (of the Vlasov model) to be monitored 
+- *n_casimirs*: integer; number of Casimir invariants to be monitored 
 
 - *Lx*: double; the *x*-axis is (-*Lx*, *Lx*)
 - *Lv*: double; the *v*-axis is (-*Lv*, *Lv*)
 - *Nx*: integer; number of points in *x* to represent the field variables
 - *Nv*: integer; number of points in *v* to represent the field variables
-- *f_init*: lambda function; initial distribution *f*(*x*,*v*,t=0)
+- *f_init*: lambda function; initial distribution *f*(*x*,*v*,*t*=0)
   
-- *output_E_modes*: integer; number of Fourier modes of *E(t)* to be saved in the `.mat` file
+- *output_E_modes*: integer; number of Fourier modes of *E*(*t*) to be saved in the `.mat` file
 
 - *ComputeKinetic*: boolean; if True, integrate the Vlasov-Poisson equation 
 - *PlotKinetic*: boolean; if True, plot the results of the integration of the Vlasov-Poisson equation
