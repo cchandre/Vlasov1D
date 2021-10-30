@@ -45,8 +45,8 @@ def integrate(case):
 	compute_G = lambda G: case.compute_S0(G) - fs[2*case.Nx:]
 	sol = root(compute_G, case.compute_G0(fs[2*case.Nx:]), tol=case.precision_fluid, method='krylov')
 	if case.ComputeFluid and not sol.success:
-		print('\033[33m        Error: a correct determination for G2 and G3 was not found \033[00m')
-		print('\033[33m               -> fluid computation is skipped \033[00m')
+		print('\033[31m        Error: a correct determination for G2 and G3 was not found \033[00m')
+		print('\033[31m               -> fluid computation is skipped \033[00m')
 		case.ComputeFluid = False
 		case.PlotFluid = False
 		case.SaveFluid = False
@@ -131,10 +131,10 @@ def integrate(case):
 		if case.ComputeFluid:
 			sol = solve_ivp(case.eqn_4f, [0, 1], fs, t_eval=t_eval, method=case.integrator_fluid, max_step=TimeStep, atol=case.precision_fluid, rtol=case.precision_fluid)
 			if sol.status!=0:
-				print('\033[90m        Fluid simulation stopped before the end \033[00m')
+				print('\033[33m        Fluid simulation stopped before the end \033[00m')
 				break
 			if xp.min(fs[2*case.Nx:3*case.Nx]) <= case.precision_fluid:
-				print('\033[90m        Error in the fluid simulation (S2<0) \033[00m')
+				print('\033[31m        Error: fluid simulation with S2<0 \033[00m')
 				break
 			if case.SaveFluid:
 				for t in range(case.nsteps):
