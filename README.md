@@ -35,13 +35,8 @@ ___
   
 - *output_E_modes*: integer; number of Fourier modes of *E*(*t*) to be saved in the `.mat` file
 
-- *ComputeKinetic*: boolean; if True, integrate the Vlasov-Poisson equation 
-- *PlotKinetic*: boolean; if True, plot the results of the integration of the Vlasov-Poisson equation
-- *SaveKinetic*: boolean; if True, save the results of the integration of the Vlasov-Poisson equation in a `.mat` file
-  
-- *ComputeFluid*: boolean; if True, integrate the fluid equations
-- *PlotFluid*: boolean; if True, plot the results of the integration of the fluid equations
-- *SaveFluid*: boolean; if True, save the results of the integration of the fluid equations in a `.mat` file
+- *Kinetic*: list of strings in ['Compute', 'Plot', 'Save']; list of instructions for the Vlasov-Poisson simulation; if contains 'Save', the results are saved in a `.mat` file
+- *Fluid*: list of strings in ['Compute', 'Plot', 'Save']; list of instructions for the fluid simulation; if contains 'Save', the results are saved in a `.mat` file
 
 - *darkmode*: boolean; if True, plots are done in dark mode
 
