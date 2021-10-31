@@ -29,7 +29,7 @@ import numpy as xp
 from scipy.fft import rfft, irfft, rfftfreq
 from scipy.integrate import simpson
 from VP1D4f_modules import integrate
-from VP1D4f_dict import dict, darkmode
+from VP1D4f_dict import dict
 
 def main():
 	integrate(VP1D4f(dict))
@@ -45,7 +45,6 @@ class VP1D4f:
 		for key in dict:
 			setattr(self, key, dict[key])
 		self.DictParams = dict
-		self.darkmode = darkmode
 		self.x = xp.linspace(-self.Lx, self.Lx, self.Nx, endpoint=False, dtype=xp.float64)
 		self.v = xp.linspace(-self.Lv, self.Lv, self.Nv, endpoint=False, dtype=xp.float64)
 		self.x_ = xp.linspace(-self.Lx, self.Lx, self.Nx+1, dtype=xp.float64)

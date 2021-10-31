@@ -51,5 +51,6 @@ dict.update({
 		'f_init': f_init,
         'output_E_modes': output_E_modes,
 		'Kinetic': Kinetic,
-        'Fluid': Fluid})
+        'Fluid': Fluid,
+        'darkmode': darkmode})
 ########################################################################################################################
