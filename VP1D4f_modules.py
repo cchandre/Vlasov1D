@@ -40,23 +40,23 @@ def integrate(case):
 	timestr = time.strftime("%Y%m%d_%H%M")
 	f = case.f.copy()
 	moments = case.compute_moments(f, max(5, case.n_moments))
-	moments[xp.abs(moments) <= case.precision_fluid] = 0
+	moments[xp.abs(moments) <= case.precision] = 0
 	fs = moments[:4, :].reshape(4*case.Nx).copy()
 	compute_G = lambda G: case.compute_S0(G) - fs[2*case.Nx:]
-	sol = root(compute_G, case.compute_G0(fs[2*case.Nx:]), tol=case.precision_fluid, method='krylov')
+	sol = root(compute_G, case.compute_G0(fs[2*case.Nx:]), tol=case.precision, method='krylov')
 	if ('Compute' in case.Fluid) and (not sol.success):
 		print('\033[31m        Error: a correct determination for G2 and G3 was not found \033[00m')
 		print('\033[31m               -> fluid computation is skipped \033[00m')
-		Fluid = []
+		case.Fluid = []
 	else:
 		fs[2*case.Nx:] = sol.x
-		fs[xp.abs(fs) <= case.precision_fluid] = 0
+		fs[xp.abs(fs) <= case.precision] = 0
 		Ef = case.E(fs[:case.Nx])
-		H0f = case.fluid_energy(fs, Ef)
-		C0f = case.fluid_casimirs(fs)
-	Ek = Ef.copy()
-	H0k = case.kinetic_energy(f, Ek)
-	C0k = case.kinetic_casimirs(f, case.n_casimirs)
+		H0f = case.energy_fluid(fs, Ef)
+		C0f = case.casimirs_fluid(fs)
+	Ek = case.E(moments[0, :])
+	H0k = case.energy_kinetic(f, Ek)
+	C0k = case.casimirs_kinetic(f, case.n_casimirs)
 	plt.ion()
 	if case.darkmode:
 		cs = ['k', 'w']
@@ -127,11 +127,11 @@ def integrate(case):
 	start = time.time()
 	for _ in trange(xp.int32(case.Tf)):
 		if 'Compute' in case.Fluid:
-			sol = solve_ivp(case.eqn_4f, [0, 1], fs, t_eval=t_eval, method=case.integrator_fluid, max_step=TimeStep, atol=case.precision_fluid, rtol=case.precision_fluid)
+			sol = solve_ivp(case.eqn_4f, [0, 1], fs, t_eval=t_eval, method=case.integrator_fluid, max_step=TimeStep, atol=case.precision, rtol=case.precision)
 			if sol.status!=0:
 				print('\033[33m        Fluid simulation stopped before the end \033[00m')
 				break
-			if xp.min(fs[2*case.Nx:3*case.Nx]) <= case.precision_fluid:
+			if xp.min(fs[2*case.Nx:3*case.Nx]) <= case.precision:
 				print('\033[31m        Error: fluid simulation with S2<0 \033[00m')
 				break
 			if 'Save' in case.Fluid:
@@ -163,7 +163,7 @@ def integrate(case):
 						f, Ek = case.L2(f, Ek, coeff * TimeStep)
 				if 'Save' in case.Kinetic:
 					suppl_k = xp.vstack((suppl_k, case.output(_ + (t+1) * TimeStep, Ek)))
-				f[f<=case.precision_fluid] = 0
+				f[f<=case.precision] = 0
 				f_ = xp.pad(f, ((0, 1),), mode='wrap')
 				f_ *= case.f0 / simpson(simpson(f_, case.v_, axis=1), case.x_)
 				f = f_[:-1, :-1]
@@ -188,14 +188,14 @@ def integrate(case):
 	if 'Save' in case.Kinetic:
 		save_data(f, suppl_k, timestr, case, model='Kinetic')
 	if 'Compute' in case.Kinetic:
-		Hk = case.kinetic_energy(f, Ek)
+		Hk = case.energy_kinetic(f, Ek)
 		print('\033[90m        Error in energy (kinetic) = {:.2e}'.format(xp.abs(Hk - H0k)))
-		for indx, Ck in enumerate(case.kinetic_casimirs(f, case.n_casimirs)):
+		for indx, Ck in enumerate(case.casimirs_kinetic(f, case.n_casimirs)):
 			print('\033[90m        Error in Casimir C{:d} (kinetic) = {:.2e}'.format(indx + 1, xp.abs(Ck - C0k[indx])))
 	if 'Compute' in case.Fluid:
-		Hf = case.fluid_energy(fs, Ef)
+		Hf = case.energy_fluid(fs, Ef)
 		print('\033[90m        Error in energy (fluid) = {:.2e}'.format(xp.abs(Hf - H0f)))
-		for indx, Cf in enumerate(case.fluid_casimirs(fs)):
+		for indx, Cf in enumerate(case.casimirs_fluid(fs)):
 			print('\033[90m        Error in Casimir C{:d} (fluid) = {:.2e}'.format(indx + 1, xp.abs(Cf - C0f[indx])))
 	plt.ioff()
 	plt.show()

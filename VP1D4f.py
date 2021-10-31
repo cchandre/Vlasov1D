@@ -58,8 +58,8 @@ class VP1D4f:
 		f_ = self.f_init(self.x_, self.v_)
 		self.f = f_[:-1, :-1]
 		self.f0 = simpson(simpson(f_, self.v_, axis=1), self.x_)
-		self.E = lambda rho: irfft(div * self.rfft_filter(rho))
-		self.output = lambda t, var: xp.append(t, self.rfft_filter(var)[0:self.output_E_modes] / var.size)
+		self.E = lambda rho: irfft(div * self.rfft_(rho))
+		self.output = lambda t, var: xp.append(t, self.rfft_(var)[0:self.output_E_modes] / var.size)
 		if self.integrator_kinetic == 'position-Verlet':
 			self.integr_coeff = [0.5, 1, 0.5]
 			self.integr_type = [1, 2, 1]
@@ -78,12 +78,12 @@ class VP1D4f:
 			self.integr_type = [1, 2, 1, 2, 1, 2, 1, 2, 1]
 
 	def L1(self, f, E, dt):
-		ft = irfft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * self.rfft_filter(f, axis=0), axis=0)
+		ft = irfft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * self.rfft_(f, axis=0), axis=0)
 		Et = self.E(simpson(xp.pad(ft, ((0, 0), (0, 1)), mode='wrap'), self.v_, axis=1))
 		return ft, Et
 
 	def L2(self, f, E, dt):
-		ft = irfft(xp.exp(-1j * E[:, None] * self.kv[None, :] * dt) * self.rfft_filter(f, axis=1), axis=1)
+		ft = irfft(xp.exp(-1j * E[:, None] * self.kv[None, :] * dt) * self.rfft_(f, axis=1), axis=1)
 		return ft, E
 
 	def eqn_4f(self, t, fs):
@@ -92,15 +92,15 @@ class VP1D4f:
 		S2 = G2**3 + G2 * (self.kappa - G2) * G3**2
 		DS2DG3 = 2 * G2 * (self.kappa - G2) * G3
 		DS2DG2 = 3 * G2**2 + (self.kappa - 2 * G2) * G3**2
-		rho_dot = - irfft(1j * self.kx * self.rfft_filter(rho * u))
-		u_dot = - u * irfft(1j * self.kx * self.rfft_filter(u)) + E - irfft(1j * self.kx * self.rfft_filter(rho**3 * S2)) / rho
-		G2_dot = - u * irfft(1j * self.kx * self.rfft_filter(G2)) - irfft(1j * self.kx * self.rfft_filter(rho**2 * DS2DG3)) / (2 * rho)
-		G3_dot = - u * irfft(1j * self.kx * self.rfft_filter(G3)) - irfft(1j * self.kx * self.rfft_filter(rho**2 * DS2DG2)) / (2 * rho)
+		rho_dot = - irfft(1j * self.kx * self.rfft_(rho * u))
+		u_dot = - u * irfft(1j * self.kx * self.rfft_(u)) + E - irfft(1j * self.kx * self.rfft_(rho**3 * S2)) / rho
+		G2_dot = - u * irfft(1j * self.kx * self.rfft_(G2)) - irfft(1j * self.kx * self.rfft_(rho**2 * DS2DG3)) / (2 * rho)
+		G3_dot = - u * irfft(1j * self.kx * self.rfft_(G3)) - irfft(1j * self.kx * self.rfft_(rho**2 * DS2DG2)) / (2 * rho)
 		return xp.hstack((rho_dot, u_dot, G2_dot, G3_dot))
 
-	def rfft_filter(self, h, axis=0):
+	def rfft_(self, h, axis=0):
 		fft_h = rfft(h, axis=axis)
-		fft_h[xp.abs(fft_h) <= self.precision_fluid] = 0
+		fft_h[xp.abs(fft_h) <= self.precision] = 0
 		fft_h[self.tail_indx[0:h.ndim]] = 0
 		return fft_h
 
@@ -131,22 +131,22 @@ class VP1D4f:
 			table_moments = xp.vstack((table_moments, Sm[:-1]))
 		return table_moments
 
-	def kinetic_energy(self, f, E):
+	def energy_kinetic(self, f, E):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
 		E_ = xp.pad(E, (0, 1), mode='wrap')
 		return (simpson(simpson(self.v_[None, :]**2 * f_, self.v_, axis=1), self.x_) + simpson(E_**2, self.x_)) / 2
 
-	def fluid_energy(self, fs, E):
+	def energy_fluid(self, fs, E):
 		rho_, u_, G2_, G3_ = [xp.pad(_, (0, 1), mode='wrap') for _ in xp.split(fs, 4)]
 		S2_ = self.compute_S(G2_, G3_)[0]
 		E_ = xp.pad(E, (0, 1), mode='wrap')
 		return simpson(rho_ * u_**2 + rho_**3 * S2_ + E_**2, self.x_) / 2
 
-	def kinetic_casimirs(self, f, n):
+	def casimirs_kinetic(self, f, n):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
 		return [simpson(simpson(f_**m, self.v_, axis=1), self.x_) for m in range(1, n+1)]
 
-	def fluid_casimirs(self, fs):
+	def casimirs_fluid(self, fs):
 		rho_, u_, G2_, G3_ = [xp.pad(_, (0, 1), mode='wrap') for _ in xp.split(fs, 4)]
 		return [simpson(_, self.x_) for _ in [u_ - rho_ * G2_ * G3_, rho_ * G2_, rho_ * G3_]]
 
