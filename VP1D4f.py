@@ -27,6 +27,7 @@
 
 import numpy as xp
 from scipy.fft import rfft, irfft, rfftfreq
+from scipy.integrate import simpson
 from VP1D4f_modules import integrate
 from VP1D4f_dict import dict, darkmode
 
@@ -38,7 +39,7 @@ class VP1D4f:
 		return '{self.__class__.__name__}({self.DictParams})'.format(self=self)
 
 	def __str__(self):
-		return 'One-dimensional Vlasov-Poisson equation and its 4-moment fluid Hamiltonian closure ({self.__class__.__name__}) for kappa = {self.kappa} and e = {self.qe}'.format(self=self)
+		return 'One-dimensional Vlasov-Poisson equation and its 4-moment Hamiltonian fluid closure ({self.__class__.__name__}) for kappa = {self.kappa}'.format(self=self)
 
 	def __init__(self, dict):
 		for key in dict:
@@ -56,7 +57,7 @@ class VP1D4f:
 		self.tail_indx = xp.index_exp[self.Nx//4:] + xp.index_exp[self.Nv//4:]
 		f_ = self.f_init(self.x_, self.v_)
 		self.f = f_[:-1, :-1]
-		self.f0 = xp.trapz(xp.trapz(f_, self.v_, axis=1), self.x_)
+		self.f0 = simpson(simpson(f_, self.v_, axis=1), self.x_)
 		self.E = lambda rho: irfft(div * self.rfft_filter(rho))
 		self.output = lambda t, var: xp.append(t, self.rfft_filter(var)[0:self.output_E_modes] / var.size)
 		if self.integrator_kinetic == 'position-Verlet':
@@ -78,7 +79,7 @@ class VP1D4f:
 
 	def L1(self, f, E, dt):
 		ft = irfft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * self.rfft_filter(f, axis=0), axis=0)
-		Et = self.E(xp.trapz(xp.pad(ft, ((0, 0), (0, 1)), mode='wrap'), self.v_, axis=1))
+		Et = self.E(simpson(xp.pad(ft, ((0, 0), (0, 1)), mode='wrap'), self.v_, axis=1))
 		return ft, Et
 
 	def L2(self, f, E, dt):
@@ -110,55 +111,44 @@ class VP1D4f:
         		9 * self.kappa * G2**5 * (self.kappa - G2) * G3 + 10 * G2**3 * (self.kappa - G2)**3 * G3**3 + G2 * (self.kappa-G2) * (self.kappa - 2 * G2) * (self.kappa**2 - 2 * self.kappa * G2 + 2 * G2**2) * G3**5]
 
 	def compute_S0(self, G):
-		G2 = G[:self.Nx]
-		G3 = G[self.Nx:]
+		G2, G3 = xp.split(G, 2)
 		return xp.array([G2**3 + G2 * (self.kappa - G2) * G3**2,
         		G2 * (self.kappa - G2) * G3 * (3 * G2**2 + (self.kappa - 2 * G2) * G3**2)]).flatten()
 
 	def compute_G0(self, S):
-		S2 = S[:self.Nx]
-		S3 = S[self.Nx:]
+		S2, S3 = xp.split(S, 2)
 		sigma = self.kappa - S2**(1/3)
 		return xp.array([S2**(1/3) - S3**2 / (27 * S2**(7/3) * sigma),
 				S3 / (3 * S2 * sigma)]).flatten()
 
 	def compute_moments(self, f, n):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
-		rho = xp.trapz(f_, self.v_, axis=1)
-		u = xp.trapz(self.v_[None, :] * f_, self.v_, axis=1) / rho
+		rho = simpson(f_, self.v_, axis=1)
+		u = simpson(self.v_[None, :] * f_, self.v_, axis=1) / rho
 		table_moments = xp.vstack((rho[:-1], u[:-1]))
 		for m in range(2, n+1):
-			Sm = xp.trapz((self.v_[None, :] - u[:, None])**m * f_, self.v_, axis=1) / rho**(m+1)
+			Sm = simpson((self.v_[None, :] - u[:, None])**m * f_, self.v_, axis=1) / rho**(m+1)
 			table_moments = xp.vstack((table_moments, Sm[:-1]))
 		return table_moments
 
 	def kinetic_energy(self, f, E):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
 		E_ = xp.pad(E, (0, 1), mode='wrap')
-		return (xp.trapz(xp.trapz(self.v_[None, :]**2 * f_, self.v_, axis=1), self.x_) + xp.trapz(E_**2, self.x_)) / 2
+		return (simpson(simpson(self.v_[None, :]**2 * f_, self.v_, axis=1), self.x_) + simpson(E_**2, self.x_)) / 2
 
 	def fluid_energy(self, fs, E):
-		rho, u, G2, G3 = xp.split(fs, 4)
-		rho_ = xp.pad(rho, (0, 1), mode='wrap')
-		u_ = xp.pad(u, (0, 1), mode='wrap')
-		S2_ = xp.pad(self.compute_S(G2, G3)[0], (0, 1), mode='wrap')
+		rho_, u_, G2_, G3_ = [xp.pad(_, (0, 1), mode='wrap') for _ in xp.split(fs, 4)]
+		S2_ = self.compute_S(G2_, G3_)[0]
 		E_ = xp.pad(E, (0, 1), mode='wrap')
-		return xp.trapz(rho_ * u_**2 + rho_**3 * S2_ + E_**2, self.x_) / 2
+		return simpson(rho_ * u_**2 + rho_**3 * S2_ + E_**2, self.x_) / 2
 
 	def kinetic_casimirs(self, f, n):
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
-		return [xp.trapz(xp.trapz(f_**m, self.v_, axis=1), self.x_) for m in range(1, n+1)]
+		return [simpson(simpson(f_**m, self.v_, axis=1), self.x_) for m in range(1, n+1)]
 
 	def fluid_casimirs(self, fs):
-		rho, u, G2, G3 = xp.split(fs, 4)
-		rho_ = xp.pad(rho, (0, 1), mode='wrap')
-		u_ = xp.pad(u, (0, 1), mode='wrap')
-		G2_ = xp.pad(G2, (0, 1), mode='wrap')
-		G3_ = xp.pad(G3, (0, 1), mode='wrap')
-		C1 = xp.trapz(u_ - rho_ * G2_ * G3_, self.x_)
-		C2 = xp.trapz(rho_ * G2_, self.x_)
-		C3 = xp.trapz(rho_ * G3_, self.x_)
-		return C1, C2, C3
+		rho_, u_, G2_, G3_ = [xp.pad(_, (0, 1), mode='wrap') for _ in xp.split(fs, 4)]
+		return [simpson(_, self.x_) for _ in [u_ - rho_ * G2_ * G3_, rho_ * G2_, rho_ * G3_]]
 
 if __name__ == "__main__":
 	main()

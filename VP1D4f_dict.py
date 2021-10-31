@@ -8,9 +8,9 @@ kappa = 1.31
 
 Tf = 48
 integrator_kinetic = 'position-Verlet'
-nsteps = 16
+nsteps = 32
 integrator_fluid = 'RK45'
-precision_fluid = 1e-11
+precision_fluid = 1e-12
 
 n_moments = 4
 n_casimirs = 3

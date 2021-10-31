@@ -26,7 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as xp
-from scipy.integrate import solve_ivp
+from scipy.integrate import simpson, solve_ivp
 from scipy.optimize import root
 from tqdm import trange
 from scipy.io import savemat
@@ -167,7 +167,7 @@ def integrate(case):
 					suppl_k = xp.vstack((suppl_k, case.output(_ + (t+1) * TimeStep, Ek)))
 				f[f<=case.precision_fluid] = 0
 				f_ = xp.pad(f, ((0, 1),), mode='wrap')
-				f_ *= case.f0 / xp.trapz(xp.trapz(f_, case.v_, axis=1), case.x_)
+				f_ *= case.f0 / simpson(simpson(f_, case.v_, axis=1), case.x_)
 				f = f_[:-1, :-1]
 			if case.PlotKinetic:
 				ax_fxvt.set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=-10)
