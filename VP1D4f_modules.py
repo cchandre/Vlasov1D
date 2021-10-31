@@ -44,12 +44,10 @@ def integrate(case):
 	fs = moments[:4, :].reshape(4*case.Nx).copy()
 	compute_G = lambda G: case.compute_S0(G) - fs[2*case.Nx:]
 	sol = root(compute_G, case.compute_G0(fs[2*case.Nx:]), tol=case.precision_fluid, method='krylov')
-	if case.ComputeFluid and not sol.success:
+	if ('Compute' in case.Fluid) and (not sol.success):
 		print('\033[31m        Error: a correct determination for G2 and G3 was not found \033[00m')
 		print('\033[31m               -> fluid computation is skipped \033[00m')
-		case.ComputeFluid = False
-		case.PlotFluid = False
-		case.SaveFluid = False
+		Fluid = []
 	else:
 		fs[2*case.Nx:] = sol.x
 		fs[xp.abs(fs) <= case.precision_fluid] = 0
@@ -72,7 +70,7 @@ def integrate(case):
 	plt.rc('ytick', color=cs[1], labelcolor=cs[1])
 	plt.rc('lines', linewidth=3)
 	plt.rc('image', cmap='bwr')
-	if case.PlotFluid:
+	if 'Plot' in case.Fluid:
 		fig_f = plt.figure(figsize=(8, 10))
 		fig_f.canvas.manager.set_window_title('Fluid simulation')
 		axs_f = fig_f.add_gridspec(case.n_moments, hspace=0.2).subplots(sharex=True)
@@ -92,9 +90,9 @@ def integrate(case):
 		axs_f[-1].set_xlabel('$x$')
 		plt.draw()
 		plt.pause(1e-4)
-	if case.SaveFluid:
+	if 'Save' in case.Fluid:
 		suppl_f = case.output(0, Ef)
-	if case.PlotKinetic:
+	if 'Plot' in case.Kinetic:
 		fig = plt.figure(figsize=(7, 6.5))
 		fig.canvas.manager.set_window_title(r'Distribution function f(x,v,t)')
 		ax_fxvt = plt.gca()
@@ -122,13 +120,13 @@ def integrate(case):
 		axs_k[-1].set_xlabel('$x$')
 		plt.draw()
 		plt.pause(1e-4)
-	if case.SaveKinetic:
+	if 'Save' in case.Kinetic:
 		suppl_k = case.output(0, Ek)
 	TimeStep = 1 / case.nsteps
 	t_eval = xp.linspace(1/case.nsteps, 1, case.nsteps)
 	start = time.time()
 	for _ in trange(xp.int32(case.Tf)):
-		if case.ComputeFluid:
+		if 'Compute' in case.Fluid:
 			sol = solve_ivp(case.eqn_4f, [0, 1], fs, t_eval=t_eval, method=case.integrator_fluid, max_step=TimeStep, atol=case.precision_fluid, rtol=case.precision_fluid)
 			if sol.status!=0:
 				print('\033[33m        Fluid simulation stopped before the end \033[00m')
@@ -136,12 +134,12 @@ def integrate(case):
 			if xp.min(fs[2*case.Nx:3*case.Nx]) <= case.precision_fluid:
 				print('\033[31m        Error: fluid simulation with S2<0 \033[00m')
 				break
-			if case.SaveFluid:
+			if 'Save' in case.Fluid:
 				for t in range(case.nsteps):
 					Ef = case.E(sol.y[:case.Nx, t])
 					suppl_f = xp.vstack((suppl_f, case.output(_ +  t_eval[t], Ef)))
 			fs = sol.y[:, -1]
-			if case.PlotFluid:
+			if 'Plot' in case.Fluid:
 				axs_f[0].set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=20)
 				rho, u, G2, G3 = xp.split(fs, 4)
 				Ef = case.E(rho)
@@ -156,20 +154,20 @@ def integrate(case):
 					ax.set_xlim((-case.Lx, case.Lx))
 				plt.draw()
 				plt.pause(1e-4)
-		if case.ComputeKinetic:
+		if 'Compute' in case.Kinetic:
 			for t in range(case.nsteps):
 				for coeff, type in zip(case.integr_coeff, case.integr_type):
 					if type == 1:
 						f, Ek = case.L1(f, Ek, coeff * TimeStep)
 					elif type == 2:
 						f, Ek = case.L2(f, Ek, coeff * TimeStep)
-				if case.SaveKinetic:
+				if 'Save' in case.Kinetic:
 					suppl_k = xp.vstack((suppl_k, case.output(_ + (t+1) * TimeStep, Ek)))
 				f[f<=case.precision_fluid] = 0
 				f_ = xp.pad(f, ((0, 1),), mode='wrap')
 				f_ *= case.f0 / simpson(simpson(f_, case.v_, axis=1), case.x_)
 				f = f_[:-1, :-1]
-			if case.PlotKinetic:
+			if 'Plot' in case.Kinetic:
 				ax_fxvt.set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=-10)
 				axs_k[0].set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=20)
 				moments = case.compute_moments(f, case.n_moments)
@@ -185,16 +183,16 @@ def integrate(case):
 				plt.draw()
 				plt.pause(1e-4)
 	print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
-	if case.SaveFluid:
+	if 'Save' in case.Fluid:
 		save_data(fs, suppl_f, timestr, case, model='Fluid')
-	if case.SaveKinetic:
+	if 'Save' in case.Kinetic:
 		save_data(f, suppl_k, timestr, case, model='Kinetic')
-	if case.ComputeKinetic:
+	if 'Compute' in case.Kinetic:
 		Hk = case.kinetic_energy(f, Ek)
 		print('\033[90m        Error in energy (kinetic) = {:.2e}'.format(xp.abs(Hk - H0k)))
 		for indx, Ck in enumerate(case.kinetic_casimirs(f, case.n_casimirs)):
 			print('\033[90m        Error in Casimir C{:d} (kinetic) = {:.2e}'.format(indx + 1, xp.abs(Ck - C0k[indx])))
-	if case.ComputeFluid:
+	if 'Compute' in case.Fluid:
 		Hf = case.fluid_energy(fs, Ef)
 		print('\033[90m        Error in energy (fluid) = {:.2e}'.format(xp.abs(Hf - H0f)))
 		for indx, Cf in enumerate(case.fluid_casimirs(fs)):

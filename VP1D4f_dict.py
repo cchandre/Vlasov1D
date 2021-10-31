@@ -10,7 +10,7 @@ Tf = 48
 integrator_kinetic = 'position-Verlet'
 nsteps = 32
 integrator_fluid = 'RK45'
-precision_fluid = 1e-12
+precision_fluid = 1e-10
 
 n_moments = 4
 n_casimirs = 3
@@ -26,13 +26,8 @@ f_init = lambda x, v: (1 - A * xp.cos(k * x[:, None])) * v[None, :]**2 * xp.exp(
 
 output_E_modes = 8
 
-ComputeKinetic = True
-PlotKinetic = True
-SaveKinetic = False
-
-ComputeFluid = True
-PlotFluid = True
-SaveFluid = False
+Kinetic = []
+Fluid = ['Compute', 'Plot']
 
 darkmode = True
 
@@ -54,10 +49,6 @@ dict.update({
 		'Nv': Nv,
 		'f_init': f_init,
         'output_E_modes': output_E_modes,
-		'ComputeKinetic': ComputeKinetic,
-        'PlotKinetic': PlotKinetic,
-		'SaveKinetic': SaveKinetic,
-        'ComputeFluid': ComputeFluid,
-        'PlotFluid': PlotFluid,
-		'SaveFluid': SaveFluid})
+		'Kinetic': Kinetic,
+        'Fluid': Fluid})
 ########################################################################################################################
