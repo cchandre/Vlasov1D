@@ -53,7 +53,7 @@ class VP1D4f:
 		div = xp.divide(1, 1j * self.kx, where=self.kx!=0)
 		div[0] = 0
 		self.kv = xp.pi / self.Lv * rfftfreq(self.Nv, d=1/self.Nv)
-		self.tail_indx = xp.index_exp[self.Nx//4:] + xp.index_exp[self.Nv//4:]
+		self.tail_indx = xp.index_exp[3*self.Nx//8:] + xp.index_exp[3*self.Nv//8:]
 		f_ = self.f_init(self.x_, self.v_)
 		self.f = f_[:-1, :-1]
 		self.f0 = simpson(simpson(f_, self.v_, axis=1), self.x_)
