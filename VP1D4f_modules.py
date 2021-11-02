@@ -91,7 +91,7 @@ def integrate(case):
 		plt.draw()
 		plt.pause(1e-4)
 	if 'Save' in case.Fluid:
-		suppl_f = case.output(0, Ef)
+		suppl_f = case.output(0, [Ef, fs], modes=case.output_modes)
 	if 'Plot' in case.Kinetic:
 		fig = plt.figure(figsize=(7, 6.5))
 		fig.canvas.manager.set_window_title(r'Distribution function f(x,v,t)')
@@ -121,13 +121,14 @@ def integrate(case):
 		plt.draw()
 		plt.pause(1e-4)
 	if 'Save' in case.Kinetic:
-		suppl_k = case.output(0, Ek)
+		suppl_k = case.output(0, [Ek, moments[0:4,:].reshape(4*case.Nx)], modes=case.output_modes)
 	TimeStep = 1 / case.nsteps
 	t_eval = xp.linspace(1/case.nsteps, 1, case.nsteps)
 	start = time.time()
 	for _ in trange(xp.int32(case.Tf)):
 		if 'Compute' in case.Fluid:
 			sol = solve_ivp(case.eqn_4f, [0, 1], fs, t_eval=t_eval, method=case.integrator_fluid, max_step=TimeStep, atol=case.precision, rtol=case.precision)
+			fs = sol.y[:, -1]
 			if sol.status!=0:
 				print('\033[33m        Warning: fluid simulation stopped before the end \033[00m')
 				break
@@ -137,8 +138,7 @@ def integrate(case):
 			if 'Save' in case.Fluid:
 				for t in range(case.nsteps):
 					Ef = case.E(sol.y[:case.Nx, t])
-					suppl_f = xp.vstack((suppl_f, case.output(_ +  t_eval[t], Ef)))
-			fs = sol.y[:, -1]
+					suppl_f = xp.vstack((suppl_f, case.output(_ +  t_eval[t], [Ef, sol.y[:, t]], modes=case.output_modes)))
 			if 'Plot' in case.Fluid:
 				axs_f[0].set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=20)
 				rho, u, G2, G3 = xp.split(fs, 4)
@@ -162,7 +162,8 @@ def integrate(case):
 					elif type == 2:
 						f, Ek = case.L2(f, Ek, coeff * TimeStep)
 				if 'Save' in case.Kinetic:
-					suppl_k = xp.vstack((suppl_k, case.output(_ + (t+1) * TimeStep, Ek)))
+					moments = case.compute_moments(f, 4)
+					suppl_k = xp.vstack((suppl_k, case.output(_ + (t+1) * TimeStep, [Ek, moments[0:4,:].reshape(4*case.Nx)], modes=case.output_modes)))
 				f[f<=case.precision] = 0
 				f_ = xp.pad(f, ((0, 1),), mode='wrap')
 				f_ *= case.f0 / simpson(simpson(f_, case.v_, axis=1), case.x_)

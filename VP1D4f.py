@@ -54,11 +54,10 @@ class VP1D4f:
 		div[0] = 0
 		self.kv = xp.pi / self.Lv * rfftfreq(self.Nv, d=1/self.Nv)
 		self.tail_indx = [(xp.s_[3*self.Nx//8:], xp.s_[:],), (xp.s_[:], xp.s_[3*self.Nv//8:],)]
-		f_ = self.f_init(self.x_, self.v_)
+		f_ = self.f_init(self.x_[:, xp.newaxis], self.v_[xp.newaxis, :])
 		self.f = f_[:-1, :-1]
 		self.f0 = simpson(simpson(f_, self.v_, axis=1), self.x_)
 		self.E = lambda rho: irfft(div * self.rfft_(rho))
-		self.output = lambda t, var: xp.append(t, self.rfft_(var)[0:self.output_E_modes] / var.size)
 		if self.integrator_kinetic == 'position-Verlet':
 			self.integr_coeff = [0.5, 1, 0.5]
 			self.integr_type = [1, 2, 1]
@@ -148,6 +147,27 @@ class VP1D4f:
 	def casimirs_fluid(self, fs):
 		rho_, u_, G2_, G3_ = [xp.pad(_, (0, 1), mode='wrap') for _ in xp.split(fs, 4)]
 		return [simpson(_, self.x_) for _ in [u_ - rho_ * G2_ * G3_, rho_ * G2_, rho_ * G3_]]
+
+	def output(self, t, data, modes=1):
+		if self.output_var=='E':
+			var = data[0]
+		elif self.output_var=='rho':
+			var = data[1][:self.Nx]
+		elif self.output_var=='u':
+			var = data[1][self.Nx:2*self.Nx]
+		elif self.output_var=='P':
+			var = data[1][:self.Nx]**3 * data[1][2*self.Nx:3*self.Nx]
+		elif self.output_var=='q':
+			var = 2 * data[1][:self.Nx]**4 * data[1][3*self.Nx:4*self.Nx]
+		else:
+			var = data[0]
+			print('\033[33m        Warning: the output variable if not valid; used E instead \033[00m')
+		if isinstance(modes, int):
+			return xp.append(t, self.rfft_(var)[0:modes] / var.size)
+		elif modes=='real':
+			return xp.append(t, var)
+		elif modes=='all':
+			return xp.append(t, self.rfft_(var) / var.size)
 
 if __name__ == "__main__":
 	main()
