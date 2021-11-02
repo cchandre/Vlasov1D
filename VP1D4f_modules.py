@@ -129,7 +129,7 @@ def integrate(case):
 		if 'Compute' in case.Fluid:
 			sol = solve_ivp(case.eqn_4f, [0, 1], fs, t_eval=t_eval, method=case.integrator_fluid, max_step=TimeStep, atol=case.precision, rtol=case.precision)
 			if sol.status!=0:
-				print('\033[33m        Fluid simulation stopped before the end \033[00m')
+				print('\033[33m        Warning: fluid simulation stopped before the end \033[00m')
 				break
 			if xp.min(fs[2*case.Nx:3*case.Nx]) <= case.precision:
 				print('\033[31m        Error: fluid simulation with S2<0 \033[00m')
