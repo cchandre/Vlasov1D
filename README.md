@@ -33,7 +33,8 @@ ___
 - *Nv*: integer; number of points in *v* to represent the field variables
 - *f_init*: lambda function; initial distribution *f*(*x*,*v*,*t*=0)
   
-- *output_E_modes*: integer; number of Fourier modes of *E*(*t*) to be saved in the `.mat` file
+- *output_var*: string in ['E', 'rho', 'u', 'P', 'q']; variable to be saved in a `.mat` file
+- *output_modes*: integer or string in ['all', 'real']; number of Fourier modes of the variable to be saved in the `.mat` file; if 'all', all Fourier modes are saved; if 'real', the variable is saved in real space
 
 - *Kinetic*: list of strings in ['Compute', 'Plot', 'Save']; list of instructions for the Vlasov-Poisson simulation; if contains 'Save', the results are saved in a `.mat` file
 - *Fluid*: list of strings in ['Compute', 'Plot', 'Save']; list of instructions for the fluid simulation; if contains 'Save', the results are saved in a `.mat` file
