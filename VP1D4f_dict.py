@@ -20,9 +20,9 @@ Lv = 4
 Nx = 2**9
 Nv = 2**9
 
-A = 1e-3
+A = 1e-2
 k = 0.5
-f_init = lambda x, v: (1 - A * xp.cos(k * x)) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
+f_init = lambda x, v: (1 - A * xp.cos(k * x)**3) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
 
 output_var = 'E'
 output_modes = 'real'
