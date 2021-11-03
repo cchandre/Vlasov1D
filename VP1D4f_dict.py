@@ -1,14 +1,14 @@
 ###################################################################################################
-##              Dictionary of parameters: https://github.com/cchandre/Vlasov1D                    ##
+##              Dictionary of parameters: https://github.com/cchandre/Vlasov1D                   ##
 ###################################################################################################
 
 import numpy as xp
 
-kappa = 1.31
+kappa = 7
 
-Tf = 48
+Tf = 50
 integrator_kinetic = 'position-Verlet'
-nsteps = 16
+nsteps = 30
 integrator_fluid = 'RK45'
 precision = 1e-11
 
@@ -17,10 +17,10 @@ n_casimirs = 3
 
 Lx = 2 * xp.pi
 Lv = 4
-Nx = 2**11
-Nv = 2**11
+Nx = 2**9
+Nv = 2**9
 
-A = 1e-6
+A = 1e-3
 k = 0.5
 f_init = lambda x, v: (1 - A * xp.cos(k * x)) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
 
@@ -51,7 +51,7 @@ dict.update({
 		'Nv': Nv,
 		'f_init': f_init,
         'output_var': output_var,
-        'output_modes': output_E_modes,
+        'output_modes': output_modes,
 		'Kinetic': Kinetic,
         'Fluid': Fluid,
         'darkmode': darkmode})
