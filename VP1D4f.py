@@ -161,7 +161,7 @@ class VP1D4f:
 			var = 2 * data[1][:self.Nx]**4 * data[1][3*self.Nx:4*self.Nx]
 		else:
 			var = data[0]
-			print('\033[33m        Warning: the output variable if not valid; used E instead \033[00m')
+			print('\033[33m        Warning: the output variable is not valid; used E instead \033[00m')
 		if isinstance(modes, int):
 			return xp.append(t, self.rfft_(var)[0:modes] / var.size)
 		elif modes=='real':
