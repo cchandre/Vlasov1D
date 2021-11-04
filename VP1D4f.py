@@ -84,8 +84,8 @@ class VP1D4f:
 		ft = irfft(xp.exp(-1j * E[:, None] * self.kv[None, :] * dt) * self.rfft_(f, axis=1), axis=1)
 		return ft, E
 
-	def eqn_4f(self, t, fs):
-		rho, u, G2, G3 = xp.split(fs, 4)
+	def eqn_4f(self, t, f):
+		rho, u, G2, G3 = xp.split(f, 4)
 		E = self.E(rho)
 		S2 = G2**3 + G2 * (self.kappa - G2) * G3**2
 		DS2DG3 = 2 * G2 * (self.kappa - G2) * G3
@@ -96,11 +96,11 @@ class VP1D4f:
 		G3_dot = - u * irfft(1j * self.kx * self.rfft_(G3)) - irfft(1j * self.kx * self.rfft_(rho**2 * DS2DG2)) / (2 * rho)
 		return xp.hstack((rho_dot, u_dot, G2_dot, G3_dot))
 
-	def rfft_(self, h, axis=0):
-		fft_h = rfft(h, axis=axis)
-		fft_h[xp.abs(fft_h) <= self.precision] = 0
-		fft_h[self.tail_indx[axis][:h.ndim]] = 0
-		return fft_h
+	def rfft_(self, f, axis=0):
+		fft_f = rfft(f, axis=axis)
+		fft_f[xp.abs(fft_f) <= self.precision] = 0
+		fft_f[self.tail_indx[axis][:f.ndim]] = 0
+		return fft_f
 
 	def compute_S(self, G2, G3):
 		return [G2**3 + G2 * (self.kappa - G2) * G3**2,
@@ -134,8 +134,8 @@ class VP1D4f:
 		E_ = xp.pad(E, (0, 1), mode='wrap')
 		return (simpson(simpson(self.v_[None, :]**2 * f_, self.v_, axis=1), self.x_) + simpson(E_**2, self.x_)) / 2
 
-	def energy_fluid(self, fs, E):
-		rho_, u_, G2_, G3_ = [xp.pad(_, (0, 1), mode='wrap') for _ in xp.split(fs, 4)]
+	def energy_fluid(self, f, E):
+		rho_, u_, G2_, G3_ = [xp.pad(_, (0, 1), mode='wrap') for _ in xp.split(f, 4)]
 		S2_ = self.compute_S(G2_, G3_)[0]
 		E_ = xp.pad(E, (0, 1), mode='wrap')
 		return simpson(rho_ * u_**2 + rho_**3 * S2_ + E_**2, self.x_) / 2
@@ -144,8 +144,8 @@ class VP1D4f:
 		f_ = xp.pad(f, ((0, 1),), mode='wrap')
 		return [simpson(simpson(f_**m, self.v_, axis=1), self.x_) for m in range(1, n+1)]
 
-	def casimirs_fluid(self, fs):
-		rho_, u_, G2_, G3_ = [xp.pad(_, (0, 1), mode='wrap') for _ in xp.split(fs, 4)]
+	def casimirs_fluid(self, f):
+		rho_, u_, G2_, G3_ = [xp.pad(_, (0, 1), mode='wrap') for _ in xp.split(f, 4)]
 		return [simpson(_, self.x_) for _ in [u_ - rho_ * G2_ * G3_, rho_ * G2_, rho_ * G3_]]
 
 	def output(self, t, data, modes=1):
