@@ -4,12 +4,12 @@
 
 import numpy as xp
 
-kappa = 7
+kappa = 1.3
 
-Tf = 20
+Tf = 48
 integrator_kinetic = 'position-Verlet'
-nsteps = 30
-integrator_fluid = 'RK45'
+nsteps = 16
+integrator_fluid = 'DOP853'
 precision = 1e-11
 
 n_moments = 4
@@ -17,10 +17,10 @@ n_casimirs = 3
 
 Lx = 2 * xp.pi
 Lv = 4
-Nx = 2**10
-Nv = 2**10
+Nx = 2**11
+Nv = 2**11
 
-A = 1e-2
+A = 1e-6
 k = 0.5
 f_init = lambda x, v: (1 - A * xp.cos(k * x)) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
 
@@ -28,8 +28,8 @@ output_var = 'E'
 output_modes = 'real'
 
 ## 'Compute', 'Plot' and/or 'Save'
-Kinetic = []
-Fluid = ['Compute', 'Plot']
+Kinetic = ['Compute', 'Plot', 'Save']
+Fluid = ['Compute', 'Plot', 'Save']
 
 darkmode = True
 

@@ -91,7 +91,7 @@ def integrate(case):
 		plt.draw()
 		plt.pause(1e-4)
 	if 'Save' in case.Fluid:
-		suppl_f = case.output(0, [Ef, fs], modes=case.output_modes)
+		data_f = case.output(0, [Ef, fs], modes=case.output_modes)
 	if 'Plot' in case.Kinetic:
 		fig = plt.figure(figsize=(7, 6.5))
 		fig.canvas.manager.set_window_title(r'Distribution function f(x,v,t)')
@@ -121,24 +121,26 @@ def integrate(case):
 		plt.draw()
 		plt.pause(1e-4)
 	if 'Save' in case.Kinetic:
-		suppl_k = case.output(0, [Ek, moments[0:4,:].reshape(4*case.Nx)], modes=case.output_modes)
+		data_k = case.output(0, [Ek, moments[0:4,:].reshape(4*case.Nx)], modes=case.output_modes)
 	TimeStep = 1 / case.nsteps
 	t_eval = xp.linspace(1/case.nsteps, 1, case.nsteps)
 	start = time.time()
+	stop_fluid = False
 	for _ in trange(xp.int32(case.Tf)):
-		if 'Compute' in case.Fluid:
-			sol = solve_ivp(case.eqn_4f, [0, 1], fs, t_eval=t_eval, method=case.integrator_fluid, max_step=TimeStep, atol=case.precision, rtol=case.precision)
-			fs = sol.y[:, -1]
+		if 'Compute' in case.Fluid and not stop_fluid:
+			sol = solve_ivp(case.eqn_4f, (0, 1), fs, t_eval=t_eval, method=case.integrator_fluid, atol=case.precision, rtol=case.precision)
 			if sol.status!=0:
 				print('\033[33m        Warning: fluid simulation stopped before the end \033[00m')
-				break
-			if xp.min(fs[2*case.Nx:3*case.Nx]) <= case.precision:
-				print('\033[31m        Error: fluid simulation with S2<0 \033[00m')
-				break
-			if 'Save' in case.Fluid:
-				for t in range(case.nsteps):
-					Ef = case.E(sol.y[:case.Nx, t])
-					suppl_f = xp.vstack((suppl_f, case.output(_ +  t_eval[t], [Ef, sol.y[:, t]], modes=case.output_modes)))
+				stop_fluid = True
+			else:
+				fs = sol.y[:, -1]
+				if xp.min(fs[2*case.Nx:3*case.Nx]) <= case.precision:
+					print('\033[31m        Error: fluid simulation with S2<0 \033[00m')
+					stop_fluid = True
+				if 'Save' in case.Fluid:
+					for t in range(case.nsteps):
+						Ef = case.E(sol.y[:case.Nx, t])
+						data_f = xp.vstack((data_f, case.output(_ +  t_eval[t], [Ef, sol.y[:, t]], modes=case.output_modes)))
 			if 'Plot' in case.Fluid:
 				axs_f[0].set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=20)
 				rho, u, G2, G3 = xp.split(fs, 4)
@@ -163,7 +165,7 @@ def integrate(case):
 						f, Ek = case.L2(f, Ek, coeff * TimeStep)
 				if 'Save' in case.Kinetic:
 					moments = case.compute_moments(f, 4)
-					suppl_k = xp.vstack((suppl_k, case.output(_ + (t+1) * TimeStep, [Ek, moments[0:4,:].reshape(4*case.Nx)], modes=case.output_modes)))
+					data_k = xp.vstack((data_k, case.output(_ + (t+1) * TimeStep, [Ek, moments[0:4,:].reshape(4*case.Nx)], modes=case.output_modes)))
 				f[f<=case.precision] = 0
 				f_ = xp.pad(f, ((0, 1),), mode='wrap')
 				f_ *= case.f0 / simpson(simpson(f_, case.v_, axis=1), case.x_)
@@ -185,9 +187,9 @@ def integrate(case):
 				plt.pause(1e-4)
 	print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
 	if 'Save' in case.Fluid:
-		save_data(fs, suppl_f, timestr, case, model='Fluid')
+		save_data(fs, data_f, timestr, case, model='Fluid')
 	if 'Save' in case.Kinetic:
-		save_data(f, suppl_k, timestr, case, model='Kinetic')
+		save_data(f, data_k, timestr, case, model='Kinetic')
 	if 'Compute' in case.Kinetic:
 		Hk = case.energy_kinetic(f, Ek)
 		print('\033[90m        Error in energy (kinetic) = {:.2e}'.format(xp.abs(Hk - H0k)))
@@ -201,9 +203,9 @@ def integrate(case):
 	plt.ioff()
 	plt.show()
 
-def save_data(data, suppl, timestr, case, model=[]):
+def save_data(final, data, timestr, case, model=[]):
 	mdic = case.DictParams.copy()
-	mdic.update({'data': data, 'suppl': suppl})
+	mdic.update({'final': final, 'data': data})
 	date_today = date.today().strftime(" %B %d, %Y")
 	mdic.update({'date': date_today, 'author': 'cristel.chandre@cnrs.fr'})
 	name_file = type(case).__name__ + '_' + model + '_' + timestr + '.mat'
