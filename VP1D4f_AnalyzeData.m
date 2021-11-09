@@ -7,7 +7,7 @@ function VP1D4f_AnalyzeData
 [filename, path] = uigetfile('*.mat');
 load([path filename],'data','output_modes','Lx','kappa','precision')
 
-P0 = 3;
+P0 = 1;
 rho0 = 1;
 Nx = length(data(1,:))-1;
 d = data(2,1)-data(1,1);

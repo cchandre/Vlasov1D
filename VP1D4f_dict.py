@@ -3,10 +3,11 @@
 ###################################################################################################
 
 import numpy as xp
+from scipy.special import erf
 
-kappa = 1.3
+kappa = 1
 
-Tf = 48
+Tf = 200
 integrator_kinetic = 'position-Verlet'
 nsteps = 16
 integrator_fluid = 'DOP853'
@@ -20,15 +21,17 @@ Lv = 4
 Nx = 2**11
 Nv = 2**11
 
-A = 1e-6
+A = 1e-4
 k = 0.5
-f_init = lambda x, v: (1 - A * xp.cos(k * x)) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
+alpha = 0.1
+# f_init = lambda x, v: (1 - A * xp.cos(k * x)) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
+f_init = lambda x, v: (1 - A * xp.cos(k * x)) * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi) * (1 + erf(alpha * v / xp.sqrt(2)))
 
 output_var = 'E'
 output_modes = 'real'
 
 ## 'Compute', 'Plot' and/or 'Save'
-Kinetic = ['Compute', 'Plot', 'Save']
+Kinetic = []
 Fluid = ['Compute', 'Plot', 'Save']
 
 darkmode = True
