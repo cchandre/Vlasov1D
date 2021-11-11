@@ -16,6 +16,7 @@
   ```sh
   python3 VP1D4f.py
   ```
+  - NB: in case of error, check your version of the python modules used in the code (see [`modules_version.txt`](https://github.com/cchandre/Vlasov1D/blob/main/modules_version.txt))
 
 ___
 ##  Parameter dictionary for VP1D4f
