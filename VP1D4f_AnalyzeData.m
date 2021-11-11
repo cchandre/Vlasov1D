@@ -18,6 +18,9 @@ if strcmp(output_modes,'real')==true
     figure
     imagesc(data(:,1),linspace(-Lx,Lx,Nx),data(:,2:end).')
     shading flat
+    cmap1 = 1-hot(256);
+    cmap2 = flipud(hot(256));
+    colormap([flip(cmap1(2:end,:));cmap2])
     colorbar
     xlabel('$\omega_p t$','interpreter','latex','FontSize',26)
     ylabel('$x$','interpreter','latex','FontSize',26)
