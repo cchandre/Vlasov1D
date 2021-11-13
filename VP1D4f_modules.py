@@ -86,7 +86,7 @@ def integrate(case):
 			line_Sf.append(line_temp)
 		for ax in axs_f:
 			ax.set_xlim((-case.Lx, case.Lx))
-			ax.legend(loc='upper right')
+			ax.legend(loc='upper right', labelcolor='linecolor')
 		axs_f[-1].set_xlabel('$x$')
 		plt.draw()
 		plt.pause(1e-4)
@@ -116,7 +116,7 @@ def integrate(case):
 			line_Sk.append(line_temp)
 		for ax in axs_k:
 			ax.set_xlim((-case.Lx, case.Lx))
-			ax.legend(loc='upper right')
+			ax.legend(loc='upper right', labelcolor='linecolor')
 		axs_k[-1].set_xlabel('$x$')
 		plt.draw()
 		plt.pause(1e-4)

@@ -5,8 +5,8 @@
 import numpy as xp
 from scipy.special import erf
 
-kappa = 2
-Tf = 20
+kappa = 1.31
+Tf = 80
 
 integrator_kinetic = 'position-Verlet'
 nsteps = 16
@@ -17,22 +17,22 @@ n_moments = 4
 n_casimirs = 3
 
 Lx = 2 * xp.pi
-Lv = 4
-Nx = 2**11
-Nv = 2**11
+Lv = 6
+Nx = 2**12
+Nv = 2**12
 
-A = 1e-4
+A = 1e-6
 k = 0.5
 alpha = 0.1
-# f_init = lambda x, v: (1 - A * xp.cos(k * x)) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
-f_init = lambda x, v: (1 - A * xp.cos(k * x)) * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi) * (1 + erf(alpha * v / xp.sqrt(2)))
+f_init = lambda x, v: (1 - A * xp.cos(k * x)) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
+# f_init = lambda x, v: (1 - A * xp.cos(k * x)) * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi) * (1 + erf(alpha * v / xp.sqrt(2)))
 
-output_var = 'P'
-output_modes = 'real'
+output_var = 'E'
+output_modes = 10
 
 ## 'Compute', 'Plot' and/or 'Save'
-Kinetic = []
-Fluid = ['Compute', 'Plot', 'Save']
+Kinetic = ['Compute', 'Plot', 'Save']
+Fluid = []
 
 darkmode = True
 
