@@ -6,20 +6,19 @@ import numpy as xp
 from scipy.special import erf
 
 kappa = 1.31
-Tf = 80
+Tf = 60
 
 integrator_kinetic = 'position-Verlet'
 nsteps = 16
 integrator_fluid = 'DOP853'
 precision = 1e-11
 
-n_moments = 4
 n_casimirs = 3
 
 Lx = 2 * xp.pi
 Lv = 6
-Nx = 2**12
-Nv = 2**12
+Nx = 2**8
+Nv = 2**8
 
 A = 1e-6
 k = 0.5
@@ -31,8 +30,8 @@ output_var = 'E'
 output_modes = 10
 
 ## 'Compute', 'Plot' and/or 'Save'
-Kinetic = ['Compute', 'Plot', 'Save']
-Fluid = []
+Kinetic = ['Compute', 'Plot']
+Fluid = ['Compute', 'Plot']
 
 darkmode = True
 
@@ -46,7 +45,6 @@ dict.update({
         'nsteps': nsteps,
 		'integrator_fluid': integrator_fluid,
         'precision': precision,
-		'n_moments': n_moments,
         'n_casimirs': n_casimirs,
         'Lx': Lx,
 		'Lv': Lv,

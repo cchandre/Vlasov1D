@@ -39,7 +39,7 @@ warnings.filterwarnings("ignore")
 def integrate(case):
 	timestr = time.strftime("%Y%m%d_%H%M")
 	state_k = case.f.copy()
-	moments = case.compute_moments(state_k, max(5, case.n_moments))
+	moments = case.compute_moments(state_k, 3)
 	moments[xp.abs(moments) <= case.precision] = 0
 	state_f = moments[:4, :].reshape(4*case.Nx).copy()
 	compute_G = lambda G: case.compute_S0(G) - state_f[2*case.Nx:]
@@ -57,39 +57,12 @@ def integrate(case):
 	E_k = case.E(moments[0, :])
 	H0_k = case.energy_kinetic(state_k, E_k)
 	C0_k = case.casimirs_kinetic(state_k, case.n_casimirs)
-	plt.ion()
-	if case.darkmode:
-		cs = ['k', 'w']
-	else:
-		cs = ['w', 'k']
-	plt.rc('figure', facecolor=cs[0], titlesize=30)
-	plt.rc('text', usetex=True, color=cs[1])
-	plt.rc('font', family='sans-serif', size=20)
-	plt.rc('axes', facecolor=cs[0], edgecolor=cs[1], labelsize=26, labelcolor=cs[1], titlecolor=cs[1])
-	plt.rc('xtick', color=cs[1], labelcolor=cs[1])
-	plt.rc('ytick', color=cs[1], labelcolor=cs[1])
-	plt.rc('lines', linewidth=3)
-	plt.rc('image', cmap='bwr')
 	if 'Plot' in case.Fluid:
-		fig_f = plt.figure(figsize=(8, 10))
-		fig_f.canvas.manager.set_window_title('Fluid simulation')
-		axs_f = fig_f.add_gridspec(case.n_moments, hspace=0.2).subplots(sharex=True)
-		axs_f[0].set_title('$\omega_p t = 0 $', loc='right', pad=20)
-		axs_f[-1].plot(case.x, E_f, 'r--', linewidth=1, label=r'$E(0)$')
-		line_Ef, = axs_f[-1].plot(case.x, E_f, 'r', label=r'$E(t)$')
-		axs_f[0].plot(case.x, moments[0, :], cs[1], linestyle='--', linewidth=1, label=r'$\rho(0)$')
-		line_rho_f, = axs_f[0].plot(case.x, moments[0, :], cs[1], label=r'$\rho(t)$')
-		line_Sf = []
-		for m in range(2, min(case.n_moments, 6)):
-			axs_f[m-1].plot(case.x, moments[0, :]**(m+1) * moments[m, :], 'c--', linewidth=1, label=r'$\rho^{{{}}} S_{{{}}}(0)$'.format(m+1, m))
-			line_temp, = axs_f[m-1].plot(case.x, moments[0, :]**(m+1) * moments[m, :], 'c', label=r'$\rho^{{{}}} S_{{{}}}(t)$'.format(m+1, m))
-			line_Sf.append(line_temp)
-		for ax in axs_f:
-			ax.set_xlim((-case.Lx, case.Lx))
-			ax.legend(loc='upper right', labelcolor='linecolor')
-		axs_f[-1].set_xlabel('$x$')
-		plt.draw()
-		plt.pause(1e-4)
+		dict_fluid = {'\\rho': moments[0, :],
+					'P': moments[0, :]**3 * moments[2, :],
+					'q': 2 * moments[0, :]**4 * moments[3, :],
+					'E': E_f}
+		axs_fluid, line_fluid = display_axes(case, dict_fluid, simul='fluid')
 	if 'Save' in case.Fluid:
 		data_f = case.output(0, [E_f, state_f], modes=case.output_modes)
 	if 'Plot' in case.Kinetic:
@@ -98,28 +71,14 @@ def integrate(case):
 		ax_fxvt = plt.gca()
 		ax_fxvt.set_title('$\omega_p t = 0 $', loc='right', pad=-10)
 		im = plt.imshow(state_k.transpose(), interpolation='gaussian', origin='lower', aspect='auto', extent=(-case.Lx, case.Lx, -case.Lv, case.Lv), vmin=xp.min(state_k), vmax=xp.max(state_k))
-		plt.gca().set_ylabel('$v$')
 		plt.gca().set_xlabel('$x$')
+		plt.gca().set_ylabel('$v$')
 		plt.colorbar()
-		fig_k = plt.figure(figsize=(8, 10))
-		fig_k.canvas.manager.set_window_title('Kinetic simulation')
-		axs_k = fig_k.add_gridspec(case.n_moments, hspace=0.2).subplots(sharex=True)
-		axs_k[0].set_title('$\omega_p t = 0 $', loc='right', pad=20)
-		axs_k[-1].plot(case.x, E_k, 'r--', linewidth=1, label=r'$E(0)$')
-		line_Ek, = axs_k[-1].plot(case.x, E_k, 'r', label=r'$E(t)$')
-		axs_k[0].plot(case.x, moments[0, :], cs[1], linestyle='--', linewidth=1, label=r'$\rho(0)$')
-		line_rho_k, = axs_k[0].plot(case.x, moments[0, :], cs[1], label=r'$\rho(t)$')
-		line_Sk = []
-		for m in range(2, case.n_moments):
-			axs_k[m-1].plot(case.x, moments[0, :]**(m+1) * moments[m, :], 'c--', linewidth=1, label=r'$\rho^{{{}}} S_{{{}}}(0)$'.format(m+1, m))
-			line_temp, = axs_k[m-1].plot(case.x, moments[0, :]**(m+1) * moments[m, :], 'c', label=r'$\rho^{{{}}} S_{{{}}}(t)$'.format(m+1, m))
-			line_Sk.append(line_temp)
-		for ax in axs_k:
-			ax.set_xlim((-case.Lx, case.Lx))
-			ax.legend(loc='upper right', labelcolor='linecolor')
-		axs_k[-1].set_xlabel('$x$')
-		plt.draw()
-		plt.pause(1e-4)
+		dict_kinetic = {'\\rho': moments[0, :],
+					'P': moments[0, :]**3 * moments[2, :],
+					'q': 2 * moments[0, :]**4 * moments[3, :],
+					'E': E_k}
+		axs_kinetic, line_kinetic = display_axes(case, dict_kinetic, simul='kinetic')
 	if 'Save' in case.Kinetic:
 		data_k = case.output(0, [E_k, moments[0:4,:].reshape(4*case.Nx)], modes=case.output_modes)
 	TimeStep = 1 / case.nsteps
@@ -142,20 +101,14 @@ def integrate(case):
 						E_f = case.E(sol.y[:case.Nx, t])
 						data_f = xp.vstack((data_f, case.output(_ +  t_eval[t], [E_f, sol.y[:, t]], modes=case.output_modes)))
 			if 'Plot' in case.Fluid:
-				axs_f[0].set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=20)
 				rho, u, G2, G3 = xp.split(state_f, 4)
 				E_f = case.E(rho)
-				line_rho_f.set_ydata(rho)
-				line_Ef.set_ydata(E_f)
-				S = case.compute_S(G2, G3)[:min(case.n_moments-2, 4)]
-				for m in range(min(case.n_moments-2, 4)):
-					line_Sf[m].set_ydata(rho**(m+1) * S[m])
-				for ax in axs_f:
-					ax.relim()
-					ax.autoscale()
-					ax.set_xlim((-case.Lx, case.Lx))
-				plt.draw()
-				plt.pause(1e-4)
+				line_fluid[0].set_ydata(rho)
+				line_fluid[3].set_ydata(E_f)
+				S = case.compute_S(G2, G3)[:2]
+				line_fluid[1].set_ydata(rho**3 * S[0])
+				line_fluid[2].set_ydata(2 * rho**4 * S[1])
+				update_axes(case, axs_fluid, _ + 1)
 		if 'Compute' in case.Kinetic:
 			for t in range(case.nsteps):
 				for coeff, type in zip(case.integr_coeff, case.integr_type):
@@ -172,19 +125,13 @@ def integrate(case):
 				state_k = f_[:-1, :-1]
 			if 'Plot' in case.Kinetic:
 				ax_fxvt.set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=-10)
-				axs_k[0].set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=20)
-				moments = case.compute_moments(state_k, case.n_moments)
 				im.set_data(state_k.transpose())
-				line_Ek.set_ydata(E_k)
-				line_rho_k.set_ydata(moments[0, :])
-				for m in range(2, case.n_moments):
-					line_Sk[m - 2].set_ydata(moments[0, :]**(m+1) * moments[m, :])
-				for ax in axs_k:
-					ax.relim()
-					ax.autoscale()
-					ax.set_xlim((-case.Lx, case.Lx))
-				plt.draw()
-				plt.pause(1e-4)
+				moments = case.compute_moments(state_k, 3)
+				line_kinetic[0].set_ydata(moments[0, :])
+				line_kinetic[1].set_ydata(moments[0, :]**3 * moments[2, :])
+				line_kinetic[2].set_ydata(2 * moments[0, :]**4 * moments[3, :])
+				line_kinetic[3].set_ydata(E_k)
+				update_axes(case, axs_kinetic, _ + 1)
 	print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
 	if 'Save' in case.Fluid:
 		save_data(state_f, data_f, timestr, case, model='Fluid')
@@ -202,6 +149,46 @@ def integrate(case):
 			print('\033[90m        Error in Casimir C{:d} (fluid) = {:.2e}'.format(indx + 1, xp.abs(C - C0_f[indx])))
 	plt.ioff()
 	plt.show()
+
+def display_axes(case, dict, simul='fluid'):
+	plt.ion()
+	if case.darkmode:
+		cs = ['k', 'w', 'c', 'm', 'r']
+	else:
+		cs = ['w', 'k', 'c', 'm', 'r']
+	plt.rc('figure', facecolor=cs[0], titlesize=30)
+	plt.rc('text', usetex=True, color=cs[1])
+	plt.rc('font', family='sans-serif', size=20)
+	plt.rc('axes', facecolor=cs[0], edgecolor=cs[1], labelsize=26, labelcolor=cs[1], titlecolor=cs[1])
+	plt.rc('xtick', color=cs[1], labelcolor=cs[1])
+	plt.rc('ytick', color=cs[1], labelcolor=cs[1])
+	plt.rc('lines', linewidth=3)
+	plt.rc('image', cmap='bwr')
+	fig = plt.figure(figsize=(8, 10))
+	fig.canvas.manager.set_window_title(simul.capitalize() + ' simulation')
+	axs = fig.add_gridspec(len(dict), hspace=0.2).subplots(sharex=True)
+	line = []
+	for m, (key, value) in enumerate(dict.items()):
+		axs[m].plot(case.x, value, cs[m+1], linestyle='--', linewidth=1, label=r'$' + str(key) + '(0)$')
+		line_temp, = axs[m].plot(case.x, value, cs[m+1], label=r'$' + str(key) + '(t)$')
+		line.append(line_temp)
+	axs[0].set_title('$\omega_p t = 0 $', loc='right', pad=20)
+	for ax in axs:
+		ax.set_xlim((-case.Lx, case.Lx))
+		ax.legend(loc='upper right', labelcolor='linecolor')
+	axs[-1].set_xlabel('$x$')
+	plt.draw()
+	plt.pause(1e-4)
+	return axs, line
+
+def update_axes(case, axs, t):
+	axs[0].set_title('$\omega_p t = {{{}}}$'.format(t), loc='right', pad=20)
+	for ax in axs:
+		ax.relim()
+		ax.autoscale()
+		ax.set_xlim((-case.Lx, case.Lx))
+	plt.draw()
+	plt.pause(1e-4)
 
 def save_data(state, data, timestr, case, model=[]):
 	mdic = case.DictParams.copy()
