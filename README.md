@@ -27,7 +27,6 @@ ___
 - *nsteps*: integer; number of steps in one period of plasma oscillations (1/*&omega;<sub>p</sub><sup>*) for the integration of the Vlasov equation
 - *integrator_fluid*: string ('RK45', ‘RK23’, ‘DOP853’, ‘BDF’, ‘LSODA’); choice of solver for the integration of the fluid equation
 - *precision*: double; numerical precision of the integrator for the fluid equations; threshold for the Fourier transforms
-- *n_moments*: integer; number of moments to be represented
 - *n_casimirs*: integer; number of Casimir invariants to be monitored 
 
 - *Lx*: double; the *x*-axis is (-*Lx*, *Lx*)
