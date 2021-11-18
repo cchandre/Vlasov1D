@@ -169,8 +169,8 @@ def display_axes(case, dict, simul='fluid'):
 	axs = fig.add_gridspec(len(dict), hspace=0.2).subplots(sharex=True)
 	line = []
 	for m, (key, value) in enumerate(dict.items()):
-		axs[m].plot(case.x, value, cs[m+1], linestyle='--', linewidth=1, label=r'$' + str(key) + '(0)$')
-		line_temp, = axs[m].plot(case.x, value, cs[m+1], label=r'$' + str(key) + '(t)$')
+		axs[m].plot(case.x, value, cs[m+1], linestyle='--', linewidth=1, label=r'$' + str(key) + '(x,0)$')
+		line_temp, = axs[m].plot(case.x, value, cs[m+1], label=r'$' + str(key) + '(x,t)$')
 		line.append(line_temp)
 	axs[0].set_title('$\omega_p t = 0 $', loc='right', pad=20)
 	for ax in axs:
