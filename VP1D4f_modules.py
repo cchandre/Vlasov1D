@@ -66,6 +66,11 @@ def integrate(case):
 	if 'Save' in case.Fluid:
 		data_f = case.output(0, [E_f, state_f], modes=case.output_modes)
 	if 'Plot' in case.Kinetic:
+		dict_kinetic = {'\\rho': moments[0, :],
+						'P': moments[0, :]**3 * moments[2, :],
+						'q': 2 * moments[0, :]**4 * moments[3, :],
+						'E': E_k}
+		axs_kinetic, line_kinetic = display_axes(case, dict_kinetic, simul='kinetic')
 		fig = plt.figure(figsize=(7, 6.5))
 		fig.canvas.manager.set_window_title(r'Distribution function f(x,v,t)')
 		ax_fxvt = plt.gca()
@@ -74,11 +79,6 @@ def integrate(case):
 		plt.gca().set_xlabel('$x$')
 		plt.gca().set_ylabel('$v$')
 		plt.colorbar()
-		dict_kinetic = {'\\rho': moments[0, :],
-					'P': moments[0, :]**3 * moments[2, :],
-					'q': 2 * moments[0, :]**4 * moments[3, :],
-					'E': E_k}
-		axs_kinetic, line_kinetic = display_axes(case, dict_kinetic, simul='kinetic')
 	if 'Save' in case.Kinetic:
 		data_k = case.output(0, [E_k, moments[0:4,:].reshape(4*case.Nx)], modes=case.output_modes)
 	TimeStep = 1 / case.nsteps
@@ -124,14 +124,14 @@ def integrate(case):
 				f_ *= case.f0 / simpson(simpson(f_, case.v_, axis=1), case.x_)
 				state_k = f_[:-1, :-1]
 			if 'Plot' in case.Kinetic:
-				ax_fxvt.set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=-10)
-				im.set_data(state_k.transpose())
 				moments = case.compute_moments(state_k, 3)
 				line_kinetic[0].set_ydata(moments[0, :])
 				line_kinetic[1].set_ydata(moments[0, :]**3 * moments[2, :])
 				line_kinetic[2].set_ydata(2 * moments[0, :]**4 * moments[3, :])
 				line_kinetic[3].set_ydata(E_k)
 				update_axes(case, axs_kinetic, _ + 1)
+				ax_fxvt.set_title('$\omega_p t = {{{}}}$'.format(_ + 1), loc='right', pad=-10)
+				im.set_data(state_k.transpose())
 	print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
 	if 'Save' in case.Fluid:
 		save_data(state_f, data_f, timestr, case, model='Fluid')
@@ -165,7 +165,7 @@ def display_axes(case, dict, simul='fluid'):
 	plt.rc('lines', linewidth=3)
 	plt.rc('image', cmap='bwr')
 	fig = plt.figure(figsize=(8, 10))
-	fig.canvas.manager.set_window_title(simul.capitalize() + ' simulation')
+	fig.canvas.manager.set_window_title((simul + ' simulation').capitalize())
 	axs = fig.add_gridspec(len(dict), hspace=0.2).subplots(sharex=True)
 	line = []
 	for m, (key, value) in enumerate(dict.items()):
