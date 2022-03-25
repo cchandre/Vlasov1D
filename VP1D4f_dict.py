@@ -21,10 +21,10 @@ Nx = 2**10
 Nv = 2**10
 
 A = 1e-7
-k = 1/Lx
+k = xp.pi / Lx
 # alpha = 0.1
-f_init = lambda x, v: (1 - A * xp.cos(xp.pi * k * x)) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
-# f_init = lambda x, v: (1 - A * xp.cos(xp.pi * k * x)) * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi) * (1 + erf(alpha * v / xp.sqrt(2)))
+f_init = lambda x, v: (1 - A * xp.cos(k * x)) * v**2 * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi)
+# f_init = lambda x, v: (1 - A * xp.cos(k * x)) * xp.exp(-v**2 / 2) / xp.sqrt(2 * xp.pi) * (1 + erf(alpha * v / xp.sqrt(2)))
 
 output_var = 'E'
 output_modes = 5
