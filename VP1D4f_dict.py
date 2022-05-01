@@ -1,5 +1,5 @@
 ###################################################################################################
-##              Dictionary of parameters: https://github.com/cchandre/Vlasov1D                   ##
+##               Dictionary of parameters: https://github.com/cchandre/Vlasov1D                  ##
 ###################################################################################################
 
 import numpy as xp
@@ -36,24 +36,23 @@ Fluid = ['Compute', 'Plot', 'Save']
 darkmode = True
 
 ###################################################################################################
-##                               DO NOT EDIT BELOW                                               ##
+##                              DO NOT EDIT BELOW                                                ##
 ###################################################################################################
-dict = {'kappa': kappa}
-dict.update({
+dict = {'kappa': kappa,
         'Tf': Tf,
-		'integrator_kinetic': integrator_kinetic,
+        'integrator_kinetic': integrator_kinetic,
         'nsteps': nsteps,
-		'integrator_fluid': integrator_fluid,
+        'integrator_fluid': integrator_fluid,
         'precision': precision,
         'n_casimirs': n_casimirs,
         'Lx': Lx,
-		'Lv': Lv,
-		'Nx': Nx,
-		'Nv': Nv,
-		'f_init': f_init,
+        'Lv': Lv,
+        'Nx': Nx,
+        'Nv': Nv,
+        'f_init': f_init,
         'output_var': output_var,
         'output_modes': output_modes,
-		'Kinetic': Kinetic,
+        'Kinetic': Kinetic,
         'Fluid': Fluid,
         'darkmode': darkmode})
 ###################################################################################################
