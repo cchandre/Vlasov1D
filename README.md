@@ -10,7 +10,7 @@
 
   - [`VP1D4f_modules.py`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_modules.py): contains the methods to run VP1D4f (not to be edited)
   
-  - [`VP1D4f_AnalyzeData.m`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_AnalyzeData.m): MATLAB script to analyze the data saved in the `.mat` file  
+  - [`VP1D4f_AnalyzeData.m`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_AnalyzeData.m): MATLAB script to analyze the output saved in the `.mat` file  
 
   - Once [`VP1D4f_dict.py`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_dict.py) has been edited with the relevant parameters, run the file as 
   ```sh
