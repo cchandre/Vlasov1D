@@ -1,6 +1,6 @@
 # One-dimensional Vlasov-Poisson equation and its Hamiltonian fluid reductions
 
-- [`Vlasov1D_4field.mlx`](https://github.com/cchandre/Vlasov1D/blob/main/Vlasov1D_4field.mlx): Matlab live script to compute and represent the series expansion of the explicit closure S<sub>4</sub>=S<sub>4</sub>(S<sub>2</sub>,S<sub>3</sub>) and S<sub>5</sub>=S<sub>5</sub>(S<sub>2</sub>,S<sub>3</sub>); also compute the series expansions of the three Casimir invariants C<sub>1</sub>, C<sub>2</sub> and C<sub>3</sub>
+- [`Vlasov1D_4field.mlx`](https://github.com/cchandre/Vlasov1D/blob/main/Vlasov1D_4field.mlx): MATLAB live script to compute and represent the series expansion of the explicit closure S<sub>4</sub>=S<sub>4</sub>(S<sub>2</sub>,S<sub>3</sub>) and S<sub>5</sub>=S<sub>5</sub>(S<sub>2</sub>,S<sub>3</sub>); also compute the series expansions of the three Casimir invariants C<sub>1</sub>, C<sub>2</sub> and C<sub>3</sub>
 - [`ParametricClosure4.nb`](https://github.com/cchandre/Vlasov1D/blob/main/ParametricClosure4.nb): Mathematica notebook to check and represent the parametric closure S<sub>2</sub>=S<sub>2</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>), S<sub>3</sub>=S<sub>3</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>),  S<sub>4</sub>=S<sub>4</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>) and S<sub>5</sub>=S<sub>5</sub>(&Gamma;<sub>2</sub>,&Gamma;<sub>3</sub>)
 
 - `VP1D4f python code`
@@ -10,7 +10,7 @@
 
   - [`VP1D4f_modules.py`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_modules.py): contains the methods to run VP1D4f (not to be edited)
   
-  - [`VP1D4f_AnalyzeData.m`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_AnalyzeData.m): Matlab script to analyze the data saved in the `.mat` file  
+  - [`VP1D4f_AnalyzeData.m`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_AnalyzeData.m): MATLAB script to analyze the data saved in the `.mat` file  
 
   - Once [`VP1D4f_dict.py`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_dict.py) has been edited with the relevant parameters, run the file as 
   ```sh
@@ -39,7 +39,7 @@ ___
 - *f_init*: lambda function; initial distribution *f*(*x*,*v*,*t*=0)
   
 - *output_var*: string in ['E', 'rho', 'u', 'P', 'q']; variable to be saved in a `.mat` file
-- *output_modes*: integer or string in ['all', 'real']; number of Fourier modes of the variable to be saved in the `.mat` file; if 'all', all Fourier modes are saved; if 'real', the variable is saved in real space
+- *output_modes*: integer or string in ['all', 'real']; number of Fourier modes of the variable to be saved in the `.mat` file; if 'all', all Fourier modes are saved; if 'real', the variable is saved in real space; use the MATLAB script [`VP1D4f_AnalyzeData.m`](https://github.com/cchandre/Vlasov1D/blob/main/VP1D4f_AnalyzeData.m) to plot the output 
 
 - *Kinetic*: list of strings in ['Compute', 'Plot', 'Save']; list of instructions for the Vlasov-Poisson simulation; if contains 'Save', the results are saved in a `.mat` file
 - *Fluid*: list of strings in ['Compute', 'Plot', 'Save']; list of instructions for the fluid simulation; if contains 'Save', the results are saved in a `.mat` file
