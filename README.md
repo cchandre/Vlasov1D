@@ -16,8 +16,11 @@
   ```sh
   python3 VP1D4f.py
   ```
-  - NB: in case of error, check your version of the python modules used in the code (see [`modules_version.txt`](https://github.com/cchandre/Vlasov1D/blob/main/modules_version.txt))
-
+  or 
+  ```sh
+  nohup python3 -u VP1D4f.py &>VP1D4f.out < /dev/null &
+  ```
+  The list of Python packages and their version are specified in [`modules_version.txt`](https://github.com/cchandre/Vlasov1D/blob/main/modules_version.txt)
 ___
 ##  Parameter dictionary for VP1D4f
 
