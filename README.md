@@ -47,7 +47,7 @@ ___
 - *darkmode*: boolean; if True, plots are done in dark mode
 
 ---
-Reference: C. Chandre, B.A. Shadwick, *Four-field Hamiltonian closure of the one-dimensional Vlasov-Poisson equation*, preprint (2021)
+Reference: C. Chandre, B.A. Shadwick, *Four-field Hamiltonian fluid closures of the one-dimensional Vlasov-Poisson equation*, [arXiv:2206.06850](https://arxiv.org/abs/2206.06850) (2022)
 
 For more information: <cristel.chandre@cnrs.fr>
 
