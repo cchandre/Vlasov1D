@@ -68,6 +68,11 @@ class VP1D4f:
 			theta = 1/(2 - 2**(1/3))
 			self.integr_coeff = [theta/2, theta, (1-theta)/2, 1-2*theta, (1-theta)/2, theta, theta/2]
 			self.integr_type = [1, 2, 1, 2, 1, 2, 1]
+		elif self.integrator_kinetic == 'Yoshida6':
+			b = xp.array([1 / (2 - 2**(1/(2*n+1))) for n in range(1, 3)])
+			a = 1 - 2 * b
+			self.integr_coeff = [b[1]*b[0]/2, b[1]*b[0], b[1]*(b[0]+a[0])/2, b[1]*a[0], b[1]*(b[0]+a[0])/2, b[1]*b[0], (b[1]+a[1])*b[0]/2, a[1]*b[0], a[1]*(b[0]+a[0])/2, a[1]*a[0], a[1]*(b[0]+a[0])/2, a[1]*b[0], (b[1]+a[1])*b[0]/2, b[1]*b[0], b[1]*(b[0]+a[0])/2, b[1]*a[0], b[1]*(b[0]+a[0])/2, b[1]*b[0], b[1]*b[0]/2]
+			self.integr_type = [1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1]
 		elif self.integrator_kinetic == 'PEFRL':
 			xi = 0.1786178958448091
 			lam = -0.2123418310626054
