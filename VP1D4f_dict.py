@@ -16,9 +16,9 @@ precision = 1e-13
 n_casimirs = 3
 
 Lx = 2 * xp.pi
-Lv = 6
-Nx = 2**10
-Nv = 2**10
+Lv = 10
+Nx = 2**9
+Nv = 2**12
 
 A = 1e-6
 k = xp.pi / Lx

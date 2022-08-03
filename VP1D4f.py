@@ -79,6 +79,20 @@ class VP1D4f:
 			chi = -0.06626458266981849
 			self.integr_coeff = [xi, (1-2*lam)/2, chi, lam, 1-2*(chi+xi), lam, chi, (1-2*lam)/2, xi]
 			self.integr_type = [1, 2, 1, 2, 1, 2, 1, 2, 1]
+		elif self.integrator_kinetic in ['O4', 'O6']:
+			if self.integrator_kinetic == 'O4':
+				a = [0.0792036964311957, 0.353172906049774, -0.0420650803577195]
+				b = [0.209515106613362, -0.143851773179818, 0.434336666566456]
+			elif self.integrator_kinetic == 'O6':
+				a = [0.0502627644003922, 0.413514300428344, 0.0450798897943977, -0.188054853819569, 0.541960678450780]
+				b = [0.148816447901042, -0.132385865767784, 0.067307604692185, 0.432666402578175, -0.016404589403618]
+			c = xp.empty((len(a) + len(b)))
+			c[0::2] = a
+			c[1::2] = b
+			self.integr_coeff = xp.hstack((c, 1 - 2 * sum(a), c[::-1]))
+			c[0::2] = 1
+			c[1::2] = 2
+			self.integr_type = xp.hstack((c, 1, c[::-1]))
 
 	def L1(self, f, E, dt):
 		ft = irfft(xp.exp(-1j * self.kx[:, None] * self.v[None, :] * dt) * self.rfft_(f, axis=0), axis=0)
