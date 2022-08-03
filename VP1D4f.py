@@ -86,10 +86,11 @@ class VP1D4f:
 			elif self.integrator_kinetic == 'O6':
 				a = [0.0502627644003922, 0.413514300428344, 0.0450798897943977, -0.188054853819569, 0.541960678450780]
 				b = [0.148816447901042, -0.132385865767784, 0.067307604692185, 0.432666402578175, -0.016404589403618]
-			c = xp.empty((len(a) + len(b)))
+			c = xp.empty((len(a) + len(b)), dtype=xp.float64)
 			c[0::2] = a
 			c[1::2] = b
 			self.integr_coeff = xp.hstack((c, 1 - 2 * sum(a), c[::-1]))
+			c = xp.empty((len(a) + len(b)), dtype=xp.int64)
 			c[0::2] = 1
 			c[1::2] = 2
 			self.integr_type = xp.hstack((c, 1, c[::-1]))
