@@ -26,9 +26,12 @@ ___
 
 - *kappa*: double; value of &kappa; defining the fluid reduction 
 - *Tf*: double; duration of the integration (in units of *&omega;<sub>p</sub><sup>-1</sup>*)
-- *integrator_kinetic*: string ('position-Verlet', 'velocity-Verlet', 'Forest-Ruth', 'PEFRL'); choice of solver for the integration of the Vlasov equation
+- *integrator_kinetic*: string ('position-Verlet', 'velocity-Verlet', 'Forest-Ruth', 'PEFRL', 'O4', 'O6'); choice of solver for the integration of the Vlasov equation
+   - 'Forest-Ruth' from [Forest, Ruth, Physica D 43, 105 (1990)](https://doi.org/10.1016/0167-2789(90)90019-L)
+   - 'PEFRL' from [Omelyan, Mryglod, Folk, Comput. Phys. Commun. 146, 188 (2002)](https://doi.org/10.1016/S0010-4655(02)00451-4)
+   - 'O4' and 'O6' from [Blanes, Moan, J. Comput. Appl. Math. 142, 313 (2002)](https://doi.org/10.1016/S0377-0427(01)00492-7)
 - *nsteps*: integer; number of steps in one period of plasma oscillations (1/*&omega;<sub>p</sub><sup>*) for the integration of the Vlasov equation
-- *integrator_fluid*: string ('RK45', ‘RK23’, ‘DOP853’, ‘BDF’, ‘LSODA’); choice of solver for the integration of the fluid equation
+- *integrator_fluid*: string ('RK45', ‘RK23’, ‘DOP853’, ‘BDF’, ‘LSODA’); choice of solver for the integration of the fluid equation (see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details)
 - *precision*: double; numerical precision of the integrator for the fluid equations; threshold for the Fourier transforms
 - *n_casimirs*: integer; number of Casimir invariants to be monitored 
 
