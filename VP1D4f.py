@@ -79,11 +79,11 @@ class VP1D4f:
 			chi = -0.06626458266981849
 			self.integr_coeff = [xi, (1-2*lam)/2, chi, lam, 1-2*(chi+xi), lam, chi, (1-2*lam)/2, xi]
 			self.integr_type = [1, 2, 1, 2, 1, 2, 1, 2, 1]
-		elif self.integrator_kinetic in ['O4', 'O6']:
-			if self.integrator_kinetic == 'O4':
+		elif self.integrator_kinetic in ['BM4', 'BM6']:
+			if self.integrator_kinetic == 'BM4':
 				a = [0.0792036964311957, 0.353172906049774, -0.0420650803577195]
 				b = [0.209515106613362, -0.143851773179818, 0.434336666566456]
-			elif self.integrator_kinetic == 'O6':
+			elif self.integrator_kinetic == 'BM6':
 				a = [0.0502627644003922, 0.413514300428344, 0.0450798897943977, -0.188054853819569, 0.541960678450780]
 				b = [0.148816447901042, -0.132385865767784, 0.067307604692185, 0.432666402578175, -0.016404589403618]
 			c = xp.empty((len(a) + len(b)), dtype=xp.float64)
