@@ -52,6 +52,20 @@ ___
 ---
 Reference: C. Chandre, B.A. Shadwick, *Four-field Hamiltonian fluid closures of the one-dimensional Vlasov-Poisson equation*, [Physics of Plasmas](https://aip.scitation.org/journal/php), to appear (2022); [arXiv:2206.06850](https://arxiv.org/abs/2206.06850)
 
+```bibtex
+@article{chandre2022,
+         title = {Four-field Hamiltonian fluid closures of the one-dimensional Vlasov-Poisson equation},
+         author = {Chandre, C.  and Shadwick, B.A. },
+         journal = {Physics of Plasmas},
+         volume = {29},
+         number = {},
+         pages = {},
+         year = {2022},
+         doi = {10.1063/5.0102418},
+         URL = {https://doi.org/10.1063/5.0102418}
+}
+```
+
 For more information: <cristel.chandre@cnrs.fr>
 
 <p align="center">
