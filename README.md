@@ -55,7 +55,7 @@ Reference: C. Chandre, B.A. Shadwick, *Four-field Hamiltonian fluid closures of 
 ```bibtex
 @article{chandre2022,
          title = {Four-field Hamiltonian fluid closures of the one-dimensional Vlasov-Poisson equation},
-         author = {Chandre, C.  and Shadwick, B.A. },
+         author = {Chandre, C.  and Shadwick, B.A.},
          journal = {Physics of Plasmas},
          volume = {29},
          number = {},
