@@ -50,7 +50,7 @@ ___
 - *darkmode*: boolean; if True, plots are done in dark mode
 
 ---
-Reference: C. Chandre, B.A. Shadwick, *Four-field Hamiltonian fluid closures of the one-dimensional Vlasov-Poisson equation*, [Physics of Plasmas](https://aip.scitation.org/journal/php), to appear (2022); [arXiv:2206.06850](https://arxiv.org/abs/2206.06850)
+Reference: C. Chandre, B.A. Shadwick, *Four-field Hamiltonian fluid closures of the one-dimensional Vlasov-Poisson equation*, [Physics of Plasmas](https://aip.scitation.org/journal/php) 29, 102101 (2022); [arXiv:2206.06850](https://arxiv.org/abs/2206.06850)
 
 ```bibtex
 @article{chandre2022,
@@ -58,8 +58,8 @@ Reference: C. Chandre, B.A. Shadwick, *Four-field Hamiltonian fluid closures of 
          author = {Chandre, C. and Shadwick, B.A.},
          journal = {Physics of Plasmas},
          volume = {29},
-         number = {},
-         pages = {},
+         number = {10},
+         pages = {102101},
          year = {2022},
          doi = {10.1063/5.0102418},
          URL = {https://doi.org/10.1063/5.0102418}
