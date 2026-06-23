@@ -26,6 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as np
+import sympy as sp
 from scipy.fft import rfft, irfft, rfftfreq
 # from pyfftw.interfaces.scipy_fft import rfft, irfft, rfftfreq
 # import pyfftw
@@ -64,7 +65,7 @@ def _rfft(f, precision=None, tail_indx=None, axis=0):
 
 class VP1D(HamSys):
 	
-    def __init__(self, params: VP1Dparams):
+    def __init__(self, params: VP1Dparams, *, type='kinetic', N_moments=None, fluid_metric=None, fluid_0=None, fluid_2=None):
         super().__init__()
         self.Lx, self.Lv, self.Nx, self.Nv = params.Lx, params.Lv, params.Nx, params.Nv
         self.x = np.linspace(-self.Lx, self.Lx, self.Nx, endpoint=False, dtype=np.float64)
@@ -79,18 +80,29 @@ class VP1D(HamSys):
         self.f0 = params.f_init(self.x[:, None], self.v[None, :])
         if params.show_distribution:
             self.ax, self.im = self.plot_f(self.f0)
-        
-    def compute_E(self, f):
-        rho = trapezoid(f, self.v, axis=1)
+        if type == 'fluid':
+            if not isinstance(N_moments, int) or N_moments < 1:
+                raise ValueError("N_moments must be a positive integer for fluid closure.")
+            self.N_moments = N_moments
+            self.fluid_metric = fluid_metric
+            self.fluid_0 = fluid_0
+            self.fluid_2 = fluid_2
+            
+    def fluid_0(self, t, nu):
+        return self.fluid
+
+    def compute_E(self, rho):
         return irfft(self.div * _rfft(rho, precision=self.precision, tail_indx=self.tail_indx_x, axis=0), axis=0)
 
     def chi(self, h, t, f):
         f_ = irfft(np.exp(-1j * self.kx[:, None] * self.v[None, :] * h) * _rfft(f, precision=self.precision, tail_indx=self.tail_indx_x, axis=0), axis=0)
-        E = self.compute_E(f_)
+        rho = trapezoid(f_, self.v, axis=1)
+        E = self.compute_E(rho)
         return irfft(np.exp(-1j * E[:, None] * self.kv[None, :] * h) * _rfft(f_, precision=self.precision, tail_indx=self.tail_indx_v,axis=1), axis=1)
 
     def chi_star(self, h, t, f):
-        E = self.compute_E(f)
+        rho = trapezoid(f, self.v, axis=1)
+        E = self.compute_E(rho)
         f_ = irfft(np.exp(-1j * E[:, None] * self.kv[None, :] * h) * _rfft(f, precision=self.precision, tail_indx=self.tail_indx_v, axis=1), axis=1)
         return irfft(np.exp(-1j * self.kx[:, None] * self.v[None, :] * h) * _rfft(f_, precision=self.precision, tail_indx=self.tail_indx_x, axis=0), axis=0)
     
@@ -138,3 +150,6 @@ class VP1D(HamSys):
         fig.colorbar(im, ax=ax)
         plt.pause(0.01)
         return ax, im
+    
+    def eqn_fluid(self, t, nu):
+        E = self.compute_E(nu[0])
